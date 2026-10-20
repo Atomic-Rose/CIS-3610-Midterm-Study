@@ -533,44 +533,110 @@ input[type=search]:focus-visible{border-color:var(--accent);box-shadow:var(--foc
 .bank-reveal{margin-top:var(--space-2)}
 .bank-reveal summary{cursor:pointer;display:inline-flex;align-items:center;min-height:36px;font-size:13px;font-weight:var(--weight-medium);color:var(--accent)}
 .bank-expl{margin:var(--space-2) 0 var(--space-1);padding:var(--space-3) var(--space-4);background:var(--surface-2);border-radius:var(--radius);font-size:14px;line-height:1.55}
-.fc-source{margin:0;font-size:14px;font-weight:var(--weight-medium)}
-.fc-page .bank-tools{margin-bottom:var(--space-5)}
-.fc-progress{display:flex;justify-content:space-between;gap:var(--space-3);flex-wrap:wrap;margin-bottom:var(--space-2);font-size:13px;color:var(--text-muted);font-variant-numeric:tabular-nums}
-.fc-progress b{color:var(--text)}
-.fc-page>.progress{margin-bottom:var(--space-4)}
-.fc{cursor:pointer;border-radius:var(--radius-card)}
-.fc:focus{outline:none;box-shadow:none}
-.fc-inner{display:grid;transform-style:preserve-3d;transform:perspective(1600px) rotateY(0);transition:transform 450ms cubic-bezier(.3,.7,.2,1)}
-.is-flipped .fc-inner{transform:perspective(1600px) rotateY(180deg)}
-.fc-face{grid-area:1/1;backface-visibility:hidden;-webkit-backface-visibility:hidden;min-height:340px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-card);box-shadow:var(--shadow-raised);padding:var(--space-6)}
-.fc-back{display:flex;flex-direction:column;justify-content:center;transform:rotateY(180deg);background:linear-gradient(160deg,color-mix(in srgb,var(--correct) 8%,var(--surface)),var(--surface) 55%);border-color:color-mix(in srgb,var(--correct) 35%,var(--border))}
-.fc-back .eyebrow{color:var(--correct)}
-.fc-stem{font-size:clamp(17px,2vw,19px);margin-top:var(--space-3)}
-.fc-hint{margin:var(--space-4) 0 0;font-size:13px;color:var(--text-muted)}
-.fc-answer{display:flex;align-items:flex-start;gap:var(--space-3);margin:var(--space-3) 0 var(--space-4);font-size:clamp(18px,2.2vw,21px);font-weight:var(--weight-semibold);line-height:1.45;overflow-wrap:anywhere}
-.fc-answer .option-letter{background:var(--correct);border-color:var(--correct);color:var(--surface);margin-top:1px}
-.fc-expl{margin:0;font-size:15px;line-height:1.6;color:var(--text-muted)}
-.fc-actions{display:flex;justify-content:center;align-items:center;gap:var(--space-3);margin-top:var(--space-5)}
-.fc-actions .btn-lg{min-width:180px}
-.fc-actions .arrow{border-color:var(--border);background:var(--surface);height:48px;min-height:48px}
-.fc-actions-back,.is-flipped .fc-actions-front{display:none}
-.is-flipped .fc-actions-back{display:flex}
-.fc-learning:hover:not(:disabled){border-color:var(--incorrect);color:var(--incorrect)}
-.fc-keys{text-align:center;margin-top:var(--space-4)}
-.fc-keys kbd{font-size:11px;padding:1px 6px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--surface-2)}
-.fc-tally{display:flex;flex-wrap:wrap;gap:var(--space-2) var(--space-5);margin-top:var(--space-3);font-size:15px;color:var(--text-muted)}
-.fc-tally b{color:var(--text)}
 @media(max-width:620px){
   .bank-item{padding:var(--space-3) var(--space-4)}
   .bank-actions{width:100%}.bank-actions button{flex:1}
-  .fc-face{min-height:300px;padding:var(--space-5)}
   .bank-tools .chiprow{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;margin:0 calc(-1 * var(--space-4));padding:2px var(--space-4)}
   .bank-tools .chiprow::-webkit-scrollbar{display:none}
   .bank-tools .pick{white-space:nowrap;flex:none}
-  .fc-actions .btn-lg{min-width:0;flex:1}
+}
+/* Flashcards: one card owns the screen; deck options live in a popover. */
+.fc-page{display:flex;flex-direction:column}
+.fc-bar{display:flex;align-items:center;justify-content:space-between;gap:var(--space-4);margin-bottom:var(--space-3)}
+.fc-title{display:flex;align-items:center;gap:var(--space-3);min-width:0}
+.fc-title h1{font-size:22px;letter-spacing:var(--tracking-tight);white-space:nowrap}
+.fc-deck-wrap{position:relative;min-width:0}
+.fc-deck{display:inline-flex;align-items:center;gap:var(--space-2);max-width:100%;min-height:36px;padding:6px 12px;border-radius:var(--radius-pill);font-weight:var(--weight-medium);font-size:13px;color:var(--text-muted);background:var(--surface);box-shadow:var(--shadow)}
+.fc-deck:hover:not(:disabled),.fc-deck[aria-expanded="true"]{color:var(--text);border-color:color-mix(in srgb,var(--accent) 45%,var(--border));background:var(--surface)}
+.fc-deck svg{width:15px;height:15px;flex:none;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round}
+.fc-deck-label{overflow:hidden;text-overflow:ellipsis}
+.fc-caret{font-size:11px;transition:transform var(--duration) var(--ease)}
+.fc-deck[aria-expanded="true"] .fc-caret{transform:rotate(180deg)}
+.fc-pop{position:absolute;top:calc(100% + 8px);left:0;z-index:25;width:min(560px,calc(100vw - 32px));display:grid;gap:var(--space-2);padding:var(--space-4) var(--space-5) var(--space-5);background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-card);box-shadow:var(--shadow-raised),0 24px 48px rgb(0 0 0/.18);animation:fade-in 140ms var(--ease)}
+.fc-pop[hidden]{display:none}
+.fc-pop-label{margin:var(--space-2) 0 2px;font:var(--weight-semibold) 11px/1.4 var(--font-sans);letter-spacing:var(--tracking-caps);text-transform:uppercase;color:var(--text-muted)}
+.fc-pop-label:first-child{margin-top:0}
+.fc-pop .seg{justify-self:start}
+.fc-pop-foot{display:flex;align-items:center;justify-content:space-between;gap:var(--space-3);flex-wrap:wrap;margin-top:var(--space-2);padding-top:var(--space-3);border-top:1px solid var(--border);font-size:12px;color:var(--text-muted)}
+.fc-pop-foot .check-label{color:var(--text);font-size:13px}
+.fc-pop .primary{justify-self:start}
+.fc-source{margin:0 0 var(--space-2);font-size:14px;font-weight:var(--weight-medium)}
+.fc-count{display:grid;justify-items:end;gap:2px;flex:none;font-variant-numeric:tabular-nums}
+.fc-count-num{font-size:14px;color:var(--text-muted)}
+.fc-count-num b{font-size:18px;color:var(--text)}
+.fc-count-tally{display:flex;align-items:center;gap:5px;font-size:12px;color:var(--text-muted)}
+.fc-count-tally i{width:7px;height:7px;border-radius:var(--radius-pill);margin-left:6px}
+.fc-count-tally i.t-known{background:var(--correct)}
+.fc-count-tally i.t-learning{background:var(--incorrect)}
+.fc-meter{height:3px;margin-bottom:var(--space-5)}
+/* The card: front and back share one grid cell; the faint stack behind signals cards remaining. */
+.fc{position:relative;isolation:isolate;cursor:pointer;border-radius:var(--radius-card)}
+.fc:focus{outline:none;box-shadow:none}
+.fc.stack-1::before,.fc.stack-2::before,.fc.stack-2::after{content:'';position:absolute;inset:0;z-index:-1;border:1px solid var(--border);border-radius:var(--radius-card);background:var(--surface);transform:translateY(8px) scale(.975);opacity:.75}
+.fc.stack-2::after{transform:translateY(16px) scale(.95);opacity:.4;z-index:-2}
+.fc-inner{display:grid;transform-style:preserve-3d;transition:transform 520ms cubic-bezier(.3,.7,.2,1)}
+.is-flipped .fc-inner{transform:perspective(1800px) rotateY(180deg)}
+.fc-face{grid-area:1/1;display:flex;flex-direction:column;min-height:clamp(320px,calc(100dvh - 400px),500px);padding:var(--space-5) var(--space-6);background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-card);box-shadow:var(--shadow-raised);backface-visibility:hidden;-webkit-backface-visibility:hidden}
+.fc:hover .fc-face{border-color:color-mix(in srgb,var(--accent) 30%,var(--border))}
+.fc-back{transform:rotateY(180deg);background:radial-gradient(120% 80% at 0% 0%,color-mix(in srgb,var(--correct) 10%,var(--surface)),var(--surface) 60%);border-color:color-mix(in srgb,var(--correct) 35%,var(--border))}
+.fc:hover .fc-back{border-color:color-mix(in srgb,var(--correct) 50%,var(--border))}
+.fc-top{display:flex;align-items:center;gap:var(--space-2);min-height:28px}
+.fc-top .status,.fc-back .fc-top .qid{margin-left:auto}
+.fc-answer-label{font:var(--weight-semibold) 11px/1 var(--font-sans);letter-spacing:var(--tracking-caps);text-transform:uppercase;color:var(--correct)}
+.fc-mid{margin:auto 0;padding:var(--space-5) 0}
+.fc-stem{margin:0 0 var(--space-5);font-size:clamp(19px,2.3vw,24px);line-height:1.45;font-weight:var(--weight-semibold);letter-spacing:-0.012em;white-space:pre-wrap;overflow-wrap:break-word;text-wrap:pretty}
+.fc-options{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--space-2)}
+.fc-options li{display:flex;align-items:flex-start;gap:var(--space-3);padding:10px 12px;background:var(--surface-2);border-radius:var(--radius);font-size:14px;line-height:1.45;overflow-wrap:anywhere}
+.fc-options .option-letter{width:22px;height:22px;font-size:11px;color:var(--text-muted);background:var(--surface)}
+.fc-recap{margin:0 0 var(--space-4);font-size:14px;line-height:1.5;color:var(--text-muted);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.fc-answer{display:flex;align-items:flex-start;gap:var(--space-3);margin:0 0 var(--space-4);font-size:clamp(20px,2.4vw,25px);font-weight:var(--weight-semibold);line-height:1.4;letter-spacing:-0.012em;overflow-wrap:anywhere}
+.fc-answer .option-letter{width:32px;height:32px;margin-top:2px;font-size:14px;background:var(--correct);border-color:var(--correct);color:var(--surface)}
+.fc-expl{margin:0;max-width:62ch;font-size:15px;line-height:1.65;color:var(--text-muted)}
+.fc-hint{margin:0;text-align:center;font-size:12px;color:var(--text-muted);opacity:.85}
+.fc-actions{display:flex;justify-content:center;align-items:center;gap:var(--space-3);margin-top:var(--space-5)}
+.fc-actions-back,.is-flipped .fc-actions-front{display:none}
+.is-flipped .fc-actions-back{display:flex}
+#fc-flip{min-width:220px;border-radius:var(--radius-pill)}
+.fc-nav{width:48px;height:48px;min-height:48px;padding:0;border-radius:var(--radius-pill);font-size:18px;color:var(--text-muted);box-shadow:var(--shadow)}
+.fc-mark{min-width:180px;border-radius:var(--radius-pill);display:inline-flex;align-items:center;justify-content:center;gap:var(--space-2)}
+.fc-mark span{font-weight:var(--weight-bold)}
+.fc-learning{background:var(--incorrect-soft);border-color:color-mix(in srgb,var(--incorrect) 40%,transparent)}
+.fc-learning span{color:var(--incorrect)}
+.fc-learning:hover:not(:disabled){background:var(--incorrect-soft);border-color:var(--incorrect)}
+.fc-known{background:var(--correct-soft);border-color:color-mix(in srgb,var(--correct) 40%,transparent)}
+.fc-known span{color:var(--correct)}
+.fc-known:hover:not(:disabled){background:var(--correct-soft);border-color:var(--correct)}
+.fc-keys{text-align:center;margin-top:var(--space-4)}
+.fc-keys span{margin:0 4px;opacity:.6}
+.fc-keys kbd{display:inline-block;min-width:20px;margin:0 2px;font-size:11px;padding:1px 6px;border:1px solid var(--border);border-bottom-width:2px;border-radius:var(--radius-sm);background:var(--surface);text-align:center}
+.fc-in-next .fc{animation:fc-in-next 280ms var(--ease)}
+.fc-in-prev .fc{animation:fc-in-prev 280ms var(--ease)}
+@keyframes fc-in-next{from{opacity:0;transform:translateX(32px) rotate(.8deg)}to{opacity:1;transform:none}}
+@keyframes fc-in-prev{from{opacity:0;transform:translateX(-32px) rotate(-.8deg)}to{opacity:1;transform:none}}
+.fc-empty{display:grid;justify-items:center;gap:var(--space-4);padding:var(--space-8) var(--space-5);border:1px dashed var(--border);border-radius:var(--radius-card);text-align:center;color:var(--text-muted)}
+.fc-empty p{margin:0}
+.fc-done h2{font-size:28px;margin:var(--space-2) 0 0}
+.fc-tally{display:flex;flex-wrap:wrap;gap:var(--space-2) var(--space-5);margin-top:var(--space-3);font-size:15px;color:var(--text-muted)}
+.fc-tally b{color:var(--text)}
+@media(max-width:720px){.fc-options{grid-template-columns:minmax(0,1fr)}}
+@media(max-width:620px){
+  .fc-bar{align-items:flex-start}
+  .fc-title{flex-direction:column;align-items:flex-start;gap:var(--space-2)}
+  .fc-deck-wrap{position:static}
+  .fc-bar{position:relative}
+  .fc-pop{left:0;right:0;width:auto;padding:var(--space-4)}
+  .fc-face{padding:var(--space-4)}
+  .fc-mid{padding:var(--space-4) 0}
+  .fc-actions{position:sticky;bottom:0;z-index:5;margin:0 calc(-1 * var(--space-4));padding:var(--space-4) var(--space-4) calc(var(--space-3) + env(safe-area-inset-bottom));background:linear-gradient(to bottom,transparent,var(--bg) 35%)}
+  .fc-stem{font-size:18px;margin-bottom:var(--space-4)}
+  .fc-options li{padding:8px 10px}
+  .fc-hint{display:none}
+  .fc-meter{margin-bottom:var(--space-4)}
+  .fc-face{min-height:0}
+  .fc-actions .fc-mark,#fc-flip{min-width:0;flex:1}
   .fc-keys{display:none}
 }
-@media (prefers-reduced-motion:reduce){.fc-inner{transition:none}}
+@media (prefers-reduced-motion:reduce){.fc-inner{transition:none}.fc-in-next .fc,.fc-in-prev .fc,.fc-pop{animation:none}}
 
 </style>
 </head>
@@ -903,27 +969,38 @@ let cardDomain=0,cardFilter='all',cardShuffle=false,deck=null;
 const CARD_FILTERS=[['all','All cards'],['unknown','Not yet known'],['learning','Still learning']];
 const newDeck=(ids,source)=>({ids:cardShuffle?shuffled(ids):ids,index:0,flipped:false,marks:{},source});
 function buildDeck(){const pool=BANK.filter(q=>(!cardDomain||q.chapter===cardDomain)&&(cardFilter==='all'||cardFilter==='unknown'&&state.cards[q.id]!=='known'||cardFilter==='learning'&&state.cards[q.id]==='learning'));deck=newDeck(pool.map(q=>q.id),null)}
+let deckOpen=false,cardMove=null;
+function deckLabel(){if(deck.source)return deck.source;return [cardDomain?`D${cardDomain} · ${CHAPTERS[cardDomain]}`:'All domains',CARD_FILTERS.find(f=>f[0]===cardFilter)[1],...(cardShuffle?['Shuffled']:[])].join(' · ')}
+function toggleDeck(open){deckOpen=open;$('#fc-pop')?.toggleAttribute('hidden',!open);$('#fc-deck')?.setAttribute('aria-expanded',String(open))}
 function renderCards(){
  if(!deck)buildDeck();
  const d=deck,total=d.ids.length,marks=Object.values(d.marks),known=marks.filter(m=>m==='known').length,learningN=marks.length-known,q=BY_ID.get(d.ids[d.index]);
- const allKnown=BANK.filter(x=>state.cards[x.id]==='known').length;
+ const allKnown=BANK.filter(x=>state.cards[x.id]==='known').length,allLearning=BANK.filter(x=>state.cards[x.id]==='learning').length,mark=q&&state.cards[q.id];
+ const pop=`<div class="fc-pop" id="fc-pop" role="group" aria-label="Deck options" ${deckOpen?'':'hidden'}>${d.source?`<p class="fc-pop-label">Current deck</p><p class="fc-source">${esc(d.source)} · ${plural(total,'card')}</p><button id="fc-reset-source" class="primary">Use all cards instead</button>`:`<p class="fc-pop-label">Domain</p>${domainChips('data-card-domain',cardDomain,'Domains')}<p class="fc-pop-label">Cards</p><div class="seg" role="group" aria-label="Which cards">${CARD_FILTERS.map(([k,l])=>`<button data-card-filter="${k}" aria-pressed="${cardFilter===k}">${l}</button>`).join('')}</div><div class="fc-pop-foot"><label class="check-label"><input type="checkbox" id="fc-shuffle" ${cardShuffle?'checked':''}> Shuffle order</label><span>${allKnown} known · ${allLearning} learning overall</span></div>`}</div>`;
+ const bar=`<div class="fc-bar"><div class="fc-title"><h1>Flashcards</h1><div class="fc-deck-wrap"><button id="fc-deck" class="fc-deck" aria-expanded="${deckOpen}" aria-controls="fc-pop"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h10m4 0h2M4 12h4m4 0h8M4 18h12m4 0h0M16 4v4M10 10v4M18 16v4"/></svg><span class="fc-deck-label">${esc(deckLabel())}</span><span class="fc-caret" aria-hidden="true">▾</span></button>${pop}</div></div>${q?`<div class="fc-count"><span class="fc-count-num"><b>${d.index+1}</b> / ${total}</span><span class="fc-count-tally"><i class="t-known"></i>${known} got it<i class="t-learning"></i>${learningN} learning</span></div>`:''}</div>`;
  let body;
- if(!total)body=`<p class="home-empty">${cardFilter==='learning'?'No cards marked “Still learning” here yet.':cardFilter==='unknown'?'You’ve marked every card here as known. Nice work.':'No cards match.'}</p>`;
- else if(!q){const left=d.ids.filter(id=>d.marks[id]==='learning');body=`<section class="hero-card fc-done"><div class="eyebrow">Deck complete</div><h1>${plural(total,'card')} reviewed</h1><div class="fc-tally"><span><b>${known}</b> got it</span><span><b>${learningN}</b> still learning</span><span><b>${total-marks.length}</b> unmarked</span></div><div class="hero-actions">${left.length?`<button id="fc-again" class="primary btn-lg">Study the ${plural(left.length,'card')} you’re learning</button>`:''}<button id="fc-restart" class="${left.length?'':'primary btn-lg'}">Restart deck</button></div></section>`}
- else body=`<div class="fc-progress"><span>Card <b>${d.index+1}</b> of ${total}</span><span>${known} got it · ${learningN} still learning</span></div><progress class="progress" max="${total}" value="${d.index}" aria-label="Deck progress"></progress>
- <div class="fc-stage${d.flipped?' is-flipped':''}"><div class="fc" id="fc" tabindex="-1"><div class="fc-inner">
-  <div class="fc-face fc-front" aria-hidden="${d.flipped}"><div class="bank-meta"><span class="qid">${q.id}</span><span class="focus-domain">D${q.chapter}</span><span class="bank-topic">${esc(q.topic)}</span>${state.cards[q.id]?`<span class="status s-${state.cards[q.id]==='known'?'correct':'missed'}">${state.cards[q.id]==='known'?'Known':'Learning'}</span>`:''}</div><p class="fc-stem">${tidy(q.statement)}</p><ol class="bank-options">${q.options.map((o,i)=>`<li><span class="option-letter">${'ABCD'[i]}</span><span>${tidy(o)}</span></li>`).join('')}</ol><p class="fc-hint">Pick your answer, then flip.</p></div>
-  <div class="fc-face fc-back" aria-hidden="${!d.flipped}"><div class="eyebrow">Answer</div><p class="fc-answer"><span class="option-letter">${q.answer}</span><span>${tidy(q.options['ABCD'.indexOf(q.answer)])}</span></p><p class="fc-expl">${tidy(q.explanation)}</p></div>
+ if(!total)body=`<div class="fc-empty"><p>${cardFilter==='learning'?'No cards marked “Still learning” here yet.':cardFilter==='unknown'?'You’ve marked every card here as known. Nice work.':'No cards match.'}</p><button id="fc-empty-deck" class="primary">Change deck</button></div>`;
+ else if(!q){const left=d.ids.filter(id=>d.marks[id]==='learning');body=`<section class="hero-card fc-done"><div class="eyebrow">Deck complete</div><h2>${plural(total,'card')} reviewed</h2><div class="fc-tally"><span><b>${known}</b> got it</span><span><b>${learningN}</b> still learning</span><span><b>${total-marks.length}</b> unmarked</span></div><div class="hero-actions">${left.length?`<button id="fc-again" class="primary btn-lg">Study the ${plural(left.length,'card')} you’re learning</button>`:''}<button id="fc-restart" class="${left.length?'btn-lg':'primary btn-lg'}">Restart deck</button></div></section>`}
+ else{const remaining=total-d.index;
+ body=`<progress class="progress fc-meter" max="${total}" value="${d.index}" aria-label="Deck progress"></progress>
+ <div class="fc-stage${d.flipped?' is-flipped':''}${cardMove?' fc-in-'+cardMove:''}"><div class="fc${remaining>2?' stack-2':remaining>1?' stack-1':''}" id="fc" tabindex="-1"><div class="fc-inner">
+  <div class="fc-face fc-front" aria-hidden="${d.flipped}"><div class="fc-top"><span class="qid">${q.id}</span><span class="focus-domain">D${q.chapter}</span><span class="bank-topic">${esc(q.topic)}</span>${mark?`<span class="status s-${mark==='known'?'correct':'missed'}">${mark==='known'?'Known':'Learning'}</span>`:''}</div>
+   <div class="fc-mid"><p class="fc-stem">${tidy(q.statement)}</p><ol class="fc-options">${q.options.map((o,i)=>`<li><span class="option-letter">${'ABCD'[i]}</span><span>${tidy(o)}</span></li>`).join('')}</ol></div>
+   <p class="fc-hint">Choose an answer in your head, then tap the card to flip</p></div>
+  <div class="fc-face fc-back" aria-hidden="${!d.flipped}"><div class="fc-top"><span class="fc-answer-label">Answer</span><span class="qid">${q.id}</span></div>
+   <div class="fc-mid"><p class="fc-recap">${tidy(q.statement)}</p><p class="fc-answer"><span class="option-letter">${q.answer}</span><span>${tidy(q.options['ABCD'.indexOf(q.answer)])}</span></p><p class="fc-expl">${tidy(q.explanation)}</p></div>
+   <p class="fc-hint">Were you right? Mark it below.</p></div>
  </div></div>
- <div class="fc-actions fc-actions-front"><button id="fc-prev" class="arrow" aria-label="Previous card" ${d.index?'':'disabled'}>←</button><button id="fc-flip" class="primary btn-lg">Show answer</button><button id="fc-next" class="arrow" aria-label="Skip to next card">→</button></div>
- <div class="fc-actions fc-actions-back"><button id="fc-learning" class="btn-lg fc-learning">Still learning</button><button id="fc-known" class="primary btn-lg">Got it</button></div></div>
- <p class="keyhelp fc-keys"><kbd>Space</kbd> flip · <kbd>←</kbd> <kbd>→</kbd> move · <kbd>1</kbd> still learning · <kbd>2</kbd> got it</p>`;
- $('#content').innerHTML=`<div class="page-narrow fc-page"><div class="page-head"><div class="eyebrow">Recall, then reveal</div><h1>Flashcards</h1><p class="muted">Decide on your answer before you flip. Your marks are saved, so you can come back and study only what you’re still learning. ${allKnown} of ${BANK.length} marked known.</p></div>
- <section class="panel bank-tools" aria-label="Deck options">${d.source?`<div class="row"><p class="fc-source">${esc(d.source)} · ${plural(total,'card')}</p><button id="fc-reset-source" class="link">Use all cards</button></div>`:`${domainChips('data-card-domain',cardDomain,'Domains')}<div class="row"><div class="seg" role="group" aria-label="Which cards">${CARD_FILTERS.map(([k,l])=>`<button data-card-filter="${k}" aria-pressed="${cardFilter===k}">${l}</button>`).join('')}</div><button id="fc-shuffle" class="pick" aria-pressed="${cardShuffle}">Shuffle</button></div>`}</section>
- ${body}</div>`;
+ <div class="fc-actions fc-actions-front"><button id="fc-prev" class="fc-nav" aria-label="Previous card" ${d.index?'':'disabled'}>←</button><button id="fc-flip" class="primary btn-lg">Show answer</button><button id="fc-next" class="fc-nav" aria-label="Skip to next card">→</button></div>
+ <div class="fc-actions fc-actions-back"><button id="fc-learning" class="btn-lg fc-mark fc-learning"><span aria-hidden="true">↺</span> Still learning</button><button id="fc-known" class="btn-lg fc-mark fc-known"><span aria-hidden="true">✓</span> Got it</button></div></div>
+ <p class="keyhelp fc-keys"><kbd>Space</kbd> flip <span>·</span> <kbd>←</kbd><kbd>→</kbd> move <span>·</span> <kbd>1</kbd> still learning <span>·</span> <kbd>2</kbd> got it</p>`}
+ cardMove=null;
+ $('#content').innerHTML=`<div class="page-narrow fc-page">${bar}${body}</div>`;
+ $('#fc-deck').onclick=()=>toggleDeck(!deckOpen);
+ if($('#fc-empty-deck'))$('#fc-empty-deck').onclick=e=>{e.stopPropagation();toggleDeck(true)};
  document.querySelectorAll('[data-card-domain]').forEach(b=>b.onclick=()=>{cardDomain=+b.dataset.cardDomain;buildDeck();renderCards()});
  document.querySelectorAll('[data-card-filter]').forEach(b=>b.onclick=()=>{cardFilter=b.dataset.cardFilter;buildDeck();renderCards()});
- if($('#fc-shuffle'))$('#fc-shuffle').onclick=()=>{cardShuffle=!cardShuffle;buildDeck();renderCards()};
+ if($('#fc-shuffle'))$('#fc-shuffle').onchange=e=>{cardShuffle=e.target.checked;buildDeck();renderCards();$('#fc-shuffle')?.focus()};
  if($('#fc-reset-source'))$('#fc-reset-source').onclick=()=>{buildDeck();renderCards()};
  if($('#fc-again'))$('#fc-again').onclick=()=>{deck=newDeck(d.ids.filter(id=>d.marks[id]==='learning'),'Cards you’re still learning');renderCards()};
  if($('#fc-restart'))$('#fc-restart').onclick=()=>{deck=newDeck(d.ids,d.source);renderCards()};
@@ -931,20 +1008,23 @@ function renderCards(){
  $('#fc').onclick=flipCard;$('#fc-flip').onclick=flipCard;$('#fc-prev').onclick=()=>moveCard(-1);$('#fc-next').onclick=()=>moveCard(1);
  $('#fc-learning').onclick=()=>markCard('learning');$('#fc-known').onclick=()=>markCard('known');
 }
-function flipCard(){const d=deck,stage=$('.fc-stage');if(!stage)return;d.flipped=!d.flipped;stage.classList.toggle('is-flipped',d.flipped);$('.fc-front').setAttribute('aria-hidden',d.flipped);$('.fc-back').setAttribute('aria-hidden',!d.flipped);$('#fc').focus({preventScroll:true})}
-function moveCard(step){const d=deck,i=d.index+step;if(i<0)return;d.index=Math.min(i,d.ids.length);d.flipped=false;renderCards();($('#fc')||$('#fc-again')||$('#fc-restart'))?.focus({preventScroll:true})}
+document.addEventListener('click',e=>{if(view==='cards'&&deckOpen&&!e.target.closest('.fc-deck-wrap'))toggleDeck(false)});
+function flipCard(){const d=deck,stage=$('.fc-stage');if(!stage)return;d.flipped=!d.flipped;stage.classList.remove('fc-in-next','fc-in-prev');stage.classList.toggle('is-flipped',d.flipped);$('.fc-front').setAttribute('aria-hidden',d.flipped);$('.fc-back').setAttribute('aria-hidden',!d.flipped);$('#fc').focus({preventScroll:true})}
+function moveCard(step){const d=deck,i=d.index+step;if(i<0)return;d.index=Math.min(i,d.ids.length);d.flipped=false;cardMove=step>0?'next':'prev';renderCards();($('#fc')||$('#fc-again')||$('#fc-restart'))?.focus({preventScroll:true})}
 function markCard(m){const id=deck.ids[deck.index];state.cards[id]=m;deck.marks[id]=m;save();moveCard(1)}
 // Theme: segmented control on wide screens, one cycling icon button on small screens and in the session drawer.
 function themeChoice(){return document.documentElement.dataset.theme||'system'}
 function syncThemeControls(){const c=themeChoice(),[,label,icon]=THEMES.find(t=>t[0]===c);document.querySelectorAll('[data-theme-choice]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.themeChoice===c)));document.querySelectorAll('[data-theme-cycle]').forEach(b=>{b.textContent=b.classList.contains('icon-btn')?icon:`${icon} Theme: ${label}`;b.setAttribute('aria-label',`Theme: ${label}. Change theme`);b.title=`Theme: ${label}`;b.onclick=cycleTheme})}
 function applyTheme(choice,announce){const root=document.documentElement;if(choice==='light'||choice==='dark')root.dataset.theme=choice;else delete root.dataset.theme;try{choice==='light'||choice==='dark'?localStorage.setItem('ink-signal-theme',choice):localStorage.removeItem('ink-signal-theme')}catch(e){}syncThemeControls();if(announce)$('#theme-status').textContent=`Theme: ${THEMES.find(t=>t[0]===themeChoice())[1]}`}
 function cycleTheme(){const i=THEMES.findIndex(t=>t[0]===themeChoice());applyTheme(THEMES[(i+1)%THEMES.length][0],true)}
-document.querySelectorAll('[data-view]').forEach(b=>b.onclick=()=>show(b.dataset.view));
+document.querySelectorAll('[data-view]').forEach(b=>b.onclick=()=>{deckOpen=false;show(b.dataset.view)});
 document.querySelectorAll('[data-theme-choice]').forEach(b=>b.onclick=()=>applyTheme(b.dataset.themeChoice,true));
 applyTheme(themeChoice(),false);
 document.addEventListener('keydown',e=>{
- if(view==='cards'&&deck&&deck.index<deck.ids.length&&$('.fc-stage')&&!e.ctrlKey&&!e.metaKey&&!e.altKey&&!e.repeat&&!$('#confirm-dialog').open&&!['INPUT','TEXTAREA','SELECT'].includes(e.target.tagName)){
+ if(view==='cards'&&!e.ctrlKey&&!e.metaKey&&!e.altKey&&!e.repeat&&!$('#confirm-dialog').open){
   const k=e.key,onButton=e.target.tagName==='BUTTON';
+  if(deckOpen){if(k==='Escape'){e.preventDefault();toggleDeck(false);$('#fc-deck').focus()}return}
+  if(!$('.fc-stage')||['INPUT','TEXTAREA','SELECT'].includes(e.target.tagName))return;
   const act=k===' '&&!onButton?flipCard:k==='ArrowRight'?()=>moveCard(1):k==='ArrowLeft'?()=>moveCard(-1):deck.flipped&&k==='1'?()=>markCard('learning'):deck.flipped&&k==='2'?()=>markCard('known'):null;
   if(act){e.preventDefault();act()}return}
  if(view!=='session'||!state.active||e.ctrlKey||e.metaKey||e.altKey||e.repeat||$('#confirm-dialog').open)return;

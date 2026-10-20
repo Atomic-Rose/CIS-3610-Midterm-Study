@@ -341,27 +341,38 @@ let cardDomain=0,cardFilter='all',cardShuffle=false,deck=null;
 const CARD_FILTERS=[['all','All cards'],['unknown','Not yet known'],['learning','Still learning']];
 const newDeck=(ids,source)=>({ids:cardShuffle?shuffled(ids):ids,index:0,flipped:false,marks:{},source});
 function buildDeck(){const pool=BANK.filter(q=>(!cardDomain||q.chapter===cardDomain)&&(cardFilter==='all'||cardFilter==='unknown'&&state.cards[q.id]!=='known'||cardFilter==='learning'&&state.cards[q.id]==='learning'));deck=newDeck(pool.map(q=>q.id),null)}
+let deckOpen=false,cardMove=null;
+function deckLabel(){if(deck.source)return deck.source;return [cardDomain?`D${cardDomain} · ${CHAPTERS[cardDomain]}`:'All domains',CARD_FILTERS.find(f=>f[0]===cardFilter)[1],...(cardShuffle?['Shuffled']:[])].join(' · ')}
+function toggleDeck(open){deckOpen=open;$('#fc-pop')?.toggleAttribute('hidden',!open);$('#fc-deck')?.setAttribute('aria-expanded',String(open))}
 function renderCards(){
  if(!deck)buildDeck();
  const d=deck,total=d.ids.length,marks=Object.values(d.marks),known=marks.filter(m=>m==='known').length,learningN=marks.length-known,q=BY_ID.get(d.ids[d.index]);
- const allKnown=BANK.filter(x=>state.cards[x.id]==='known').length;
+ const allKnown=BANK.filter(x=>state.cards[x.id]==='known').length,allLearning=BANK.filter(x=>state.cards[x.id]==='learning').length,mark=q&&state.cards[q.id];
+ const pop=`<div class="fc-pop" id="fc-pop" role="group" aria-label="Deck options" ${deckOpen?'':'hidden'}>${d.source?`<p class="fc-pop-label">Current deck</p><p class="fc-source">${esc(d.source)} · ${plural(total,'card')}</p><button id="fc-reset-source" class="primary">Use all cards instead</button>`:`<p class="fc-pop-label">Domain</p>${domainChips('data-card-domain',cardDomain,'Domains')}<p class="fc-pop-label">Cards</p><div class="seg" role="group" aria-label="Which cards">${CARD_FILTERS.map(([k,l])=>`<button data-card-filter="${k}" aria-pressed="${cardFilter===k}">${l}</button>`).join('')}</div><div class="fc-pop-foot"><label class="check-label"><input type="checkbox" id="fc-shuffle" ${cardShuffle?'checked':''}> Shuffle order</label><span>${allKnown} known · ${allLearning} learning overall</span></div>`}</div>`;
+ const bar=`<div class="fc-bar"><div class="fc-title"><h1>Flashcards</h1><div class="fc-deck-wrap"><button id="fc-deck" class="fc-deck" aria-expanded="${deckOpen}" aria-controls="fc-pop"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h10m4 0h2M4 12h4m4 0h8M4 18h12m4 0h0M16 4v4M10 10v4M18 16v4"/></svg><span class="fc-deck-label">${esc(deckLabel())}</span><span class="fc-caret" aria-hidden="true">▾</span></button>${pop}</div></div>${q?`<div class="fc-count"><span class="fc-count-num"><b>${d.index+1}</b> / ${total}</span><span class="fc-count-tally"><i class="t-known"></i>${known} got it<i class="t-learning"></i>${learningN} learning</span></div>`:''}</div>`;
  let body;
- if(!total)body=`<p class="home-empty">${cardFilter==='learning'?'No cards marked “Still learning” here yet.':cardFilter==='unknown'?'You’ve marked every card here as known. Nice work.':'No cards match.'}</p>`;
- else if(!q){const left=d.ids.filter(id=>d.marks[id]==='learning');body=`<section class="hero-card fc-done"><div class="eyebrow">Deck complete</div><h1>${plural(total,'card')} reviewed</h1><div class="fc-tally"><span><b>${known}</b> got it</span><span><b>${learningN}</b> still learning</span><span><b>${total-marks.length}</b> unmarked</span></div><div class="hero-actions">${left.length?`<button id="fc-again" class="primary btn-lg">Study the ${plural(left.length,'card')} you’re learning</button>`:''}<button id="fc-restart" class="${left.length?'':'primary btn-lg'}">Restart deck</button></div></section>`}
- else body=`<div class="fc-progress"><span>Card <b>${d.index+1}</b> of ${total}</span><span>${known} got it · ${learningN} still learning</span></div><progress class="progress" max="${total}" value="${d.index}" aria-label="Deck progress"></progress>
- <div class="fc-stage${d.flipped?' is-flipped':''}"><div class="fc" id="fc" tabindex="-1"><div class="fc-inner">
-  <div class="fc-face fc-front" aria-hidden="${d.flipped}"><div class="bank-meta"><span class="qid">${q.id}</span><span class="focus-domain">D${q.chapter}</span><span class="bank-topic">${esc(q.topic)}</span>${state.cards[q.id]?`<span class="status s-${state.cards[q.id]==='known'?'correct':'missed'}">${state.cards[q.id]==='known'?'Known':'Learning'}</span>`:''}</div><p class="fc-stem">${tidy(q.statement)}</p><ol class="bank-options">${q.options.map((o,i)=>`<li><span class="option-letter">${'ABCD'[i]}</span><span>${tidy(o)}</span></li>`).join('')}</ol><p class="fc-hint">Pick your answer, then flip.</p></div>
-  <div class="fc-face fc-back" aria-hidden="${!d.flipped}"><div class="eyebrow">Answer</div><p class="fc-answer"><span class="option-letter">${q.answer}</span><span>${tidy(q.options['ABCD'.indexOf(q.answer)])}</span></p><p class="fc-expl">${tidy(q.explanation)}</p></div>
+ if(!total)body=`<div class="fc-empty"><p>${cardFilter==='learning'?'No cards marked “Still learning” here yet.':cardFilter==='unknown'?'You’ve marked every card here as known. Nice work.':'No cards match.'}</p><button id="fc-empty-deck" class="primary">Change deck</button></div>`;
+ else if(!q){const left=d.ids.filter(id=>d.marks[id]==='learning');body=`<section class="hero-card fc-done"><div class="eyebrow">Deck complete</div><h2>${plural(total,'card')} reviewed</h2><div class="fc-tally"><span><b>${known}</b> got it</span><span><b>${learningN}</b> still learning</span><span><b>${total-marks.length}</b> unmarked</span></div><div class="hero-actions">${left.length?`<button id="fc-again" class="primary btn-lg">Study the ${plural(left.length,'card')} you’re learning</button>`:''}<button id="fc-restart" class="${left.length?'btn-lg':'primary btn-lg'}">Restart deck</button></div></section>`}
+ else{const remaining=total-d.index;
+ body=`<progress class="progress fc-meter" max="${total}" value="${d.index}" aria-label="Deck progress"></progress>
+ <div class="fc-stage${d.flipped?' is-flipped':''}${cardMove?' fc-in-'+cardMove:''}"><div class="fc${remaining>2?' stack-2':remaining>1?' stack-1':''}" id="fc" tabindex="-1"><div class="fc-inner">
+  <div class="fc-face fc-front" aria-hidden="${d.flipped}"><div class="fc-top"><span class="qid">${q.id}</span><span class="focus-domain">D${q.chapter}</span><span class="bank-topic">${esc(q.topic)}</span>${mark?`<span class="status s-${mark==='known'?'correct':'missed'}">${mark==='known'?'Known':'Learning'}</span>`:''}</div>
+   <div class="fc-mid"><p class="fc-stem">${tidy(q.statement)}</p><ol class="fc-options">${q.options.map((o,i)=>`<li><span class="option-letter">${'ABCD'[i]}</span><span>${tidy(o)}</span></li>`).join('')}</ol></div>
+   <p class="fc-hint">Choose an answer in your head, then tap the card to flip</p></div>
+  <div class="fc-face fc-back" aria-hidden="${!d.flipped}"><div class="fc-top"><span class="fc-answer-label">Answer</span><span class="qid">${q.id}</span></div>
+   <div class="fc-mid"><p class="fc-recap">${tidy(q.statement)}</p><p class="fc-answer"><span class="option-letter">${q.answer}</span><span>${tidy(q.options['ABCD'.indexOf(q.answer)])}</span></p><p class="fc-expl">${tidy(q.explanation)}</p></div>
+   <p class="fc-hint">Were you right? Mark it below.</p></div>
  </div></div>
- <div class="fc-actions fc-actions-front"><button id="fc-prev" class="arrow" aria-label="Previous card" ${d.index?'':'disabled'}>←</button><button id="fc-flip" class="primary btn-lg">Show answer</button><button id="fc-next" class="arrow" aria-label="Skip to next card">→</button></div>
- <div class="fc-actions fc-actions-back"><button id="fc-learning" class="btn-lg fc-learning">Still learning</button><button id="fc-known" class="primary btn-lg">Got it</button></div></div>
- <p class="keyhelp fc-keys"><kbd>Space</kbd> flip · <kbd>←</kbd> <kbd>→</kbd> move · <kbd>1</kbd> still learning · <kbd>2</kbd> got it</p>`;
- $('#content').innerHTML=`<div class="page-narrow fc-page"><div class="page-head"><div class="eyebrow">Recall, then reveal</div><h1>Flashcards</h1><p class="muted">Decide on your answer before you flip. Your marks are saved, so you can come back and study only what you’re still learning. ${allKnown} of ${BANK.length} marked known.</p></div>
- <section class="panel bank-tools" aria-label="Deck options">${d.source?`<div class="row"><p class="fc-source">${esc(d.source)} · ${plural(total,'card')}</p><button id="fc-reset-source" class="link">Use all cards</button></div>`:`${domainChips('data-card-domain',cardDomain,'Domains')}<div class="row"><div class="seg" role="group" aria-label="Which cards">${CARD_FILTERS.map(([k,l])=>`<button data-card-filter="${k}" aria-pressed="${cardFilter===k}">${l}</button>`).join('')}</div><button id="fc-shuffle" class="pick" aria-pressed="${cardShuffle}">Shuffle</button></div>`}</section>
- ${body}</div>`;
+ <div class="fc-actions fc-actions-front"><button id="fc-prev" class="fc-nav" aria-label="Previous card" ${d.index?'':'disabled'}>←</button><button id="fc-flip" class="primary btn-lg">Show answer</button><button id="fc-next" class="fc-nav" aria-label="Skip to next card">→</button></div>
+ <div class="fc-actions fc-actions-back"><button id="fc-learning" class="btn-lg fc-mark fc-learning"><span aria-hidden="true">↺</span> Still learning</button><button id="fc-known" class="btn-lg fc-mark fc-known"><span aria-hidden="true">✓</span> Got it</button></div></div>
+ <p class="keyhelp fc-keys"><kbd>Space</kbd> flip <span>·</span> <kbd>←</kbd><kbd>→</kbd> move <span>·</span> <kbd>1</kbd> still learning <span>·</span> <kbd>2</kbd> got it</p>`}
+ cardMove=null;
+ $('#content').innerHTML=`<div class="page-narrow fc-page">${bar}${body}</div>`;
+ $('#fc-deck').onclick=()=>toggleDeck(!deckOpen);
+ if($('#fc-empty-deck'))$('#fc-empty-deck').onclick=e=>{e.stopPropagation();toggleDeck(true)};
  document.querySelectorAll('[data-card-domain]').forEach(b=>b.onclick=()=>{cardDomain=+b.dataset.cardDomain;buildDeck();renderCards()});
  document.querySelectorAll('[data-card-filter]').forEach(b=>b.onclick=()=>{cardFilter=b.dataset.cardFilter;buildDeck();renderCards()});
- if($('#fc-shuffle'))$('#fc-shuffle').onclick=()=>{cardShuffle=!cardShuffle;buildDeck();renderCards()};
+ if($('#fc-shuffle'))$('#fc-shuffle').onchange=e=>{cardShuffle=e.target.checked;buildDeck();renderCards();$('#fc-shuffle')?.focus()};
  if($('#fc-reset-source'))$('#fc-reset-source').onclick=()=>{buildDeck();renderCards()};
  if($('#fc-again'))$('#fc-again').onclick=()=>{deck=newDeck(d.ids.filter(id=>d.marks[id]==='learning'),'Cards you’re still learning');renderCards()};
  if($('#fc-restart'))$('#fc-restart').onclick=()=>{deck=newDeck(d.ids,d.source);renderCards()};
@@ -369,20 +380,23 @@ function renderCards(){
  $('#fc').onclick=flipCard;$('#fc-flip').onclick=flipCard;$('#fc-prev').onclick=()=>moveCard(-1);$('#fc-next').onclick=()=>moveCard(1);
  $('#fc-learning').onclick=()=>markCard('learning');$('#fc-known').onclick=()=>markCard('known');
 }
-function flipCard(){const d=deck,stage=$('.fc-stage');if(!stage)return;d.flipped=!d.flipped;stage.classList.toggle('is-flipped',d.flipped);$('.fc-front').setAttribute('aria-hidden',d.flipped);$('.fc-back').setAttribute('aria-hidden',!d.flipped);$('#fc').focus({preventScroll:true})}
-function moveCard(step){const d=deck,i=d.index+step;if(i<0)return;d.index=Math.min(i,d.ids.length);d.flipped=false;renderCards();($('#fc')||$('#fc-again')||$('#fc-restart'))?.focus({preventScroll:true})}
+document.addEventListener('click',e=>{if(view==='cards'&&deckOpen&&!e.target.closest('.fc-deck-wrap'))toggleDeck(false)});
+function flipCard(){const d=deck,stage=$('.fc-stage');if(!stage)return;d.flipped=!d.flipped;stage.classList.remove('fc-in-next','fc-in-prev');stage.classList.toggle('is-flipped',d.flipped);$('.fc-front').setAttribute('aria-hidden',d.flipped);$('.fc-back').setAttribute('aria-hidden',!d.flipped);$('#fc').focus({preventScroll:true})}
+function moveCard(step){const d=deck,i=d.index+step;if(i<0)return;d.index=Math.min(i,d.ids.length);d.flipped=false;cardMove=step>0?'next':'prev';renderCards();($('#fc')||$('#fc-again')||$('#fc-restart'))?.focus({preventScroll:true})}
 function markCard(m){const id=deck.ids[deck.index];state.cards[id]=m;deck.marks[id]=m;save();moveCard(1)}
 // Theme: segmented control on wide screens, one cycling icon button on small screens and in the session drawer.
 function themeChoice(){return document.documentElement.dataset.theme||'system'}
 function syncThemeControls(){const c=themeChoice(),[,label,icon]=THEMES.find(t=>t[0]===c);document.querySelectorAll('[data-theme-choice]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.themeChoice===c)));document.querySelectorAll('[data-theme-cycle]').forEach(b=>{b.textContent=b.classList.contains('icon-btn')?icon:`${icon} Theme: ${label}`;b.setAttribute('aria-label',`Theme: ${label}. Change theme`);b.title=`Theme: ${label}`;b.onclick=cycleTheme})}
 function applyTheme(choice,announce){const root=document.documentElement;if(choice==='light'||choice==='dark')root.dataset.theme=choice;else delete root.dataset.theme;try{choice==='light'||choice==='dark'?localStorage.setItem('ink-signal-theme',choice):localStorage.removeItem('ink-signal-theme')}catch(e){}syncThemeControls();if(announce)$('#theme-status').textContent=`Theme: ${THEMES.find(t=>t[0]===themeChoice())[1]}`}
 function cycleTheme(){const i=THEMES.findIndex(t=>t[0]===themeChoice());applyTheme(THEMES[(i+1)%THEMES.length][0],true)}
-document.querySelectorAll('[data-view]').forEach(b=>b.onclick=()=>show(b.dataset.view));
+document.querySelectorAll('[data-view]').forEach(b=>b.onclick=()=>{deckOpen=false;show(b.dataset.view)});
 document.querySelectorAll('[data-theme-choice]').forEach(b=>b.onclick=()=>applyTheme(b.dataset.themeChoice,true));
 applyTheme(themeChoice(),false);
 document.addEventListener('keydown',e=>{
- if(view==='cards'&&deck&&deck.index<deck.ids.length&&$('.fc-stage')&&!e.ctrlKey&&!e.metaKey&&!e.altKey&&!e.repeat&&!$('#confirm-dialog').open&&!['INPUT','TEXTAREA','SELECT'].includes(e.target.tagName)){
+ if(view==='cards'&&!e.ctrlKey&&!e.metaKey&&!e.altKey&&!e.repeat&&!$('#confirm-dialog').open){
   const k=e.key,onButton=e.target.tagName==='BUTTON';
+  if(deckOpen){if(k==='Escape'){e.preventDefault();toggleDeck(false);$('#fc-deck').focus()}return}
+  if(!$('.fc-stage')||['INPUT','TEXTAREA','SELECT'].includes(e.target.tagName))return;
   const act=k===' '&&!onButton?flipCard:k==='ArrowRight'?()=>moveCard(1):k==='ArrowLeft'?()=>moveCard(-1):deck.flipped&&k==='1'?()=>markCard('learning'):deck.flipped&&k==='2'?()=>markCard('known'):null;
   if(act){e.preventDefault();act()}return}
  if(view!=='session'||!state.active||e.ctrlKey||e.metaKey||e.altKey||e.repeat||$('#confirm-dialog').open)return;

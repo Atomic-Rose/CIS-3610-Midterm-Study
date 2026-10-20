@@ -114,7 +114,8 @@ with sync_playwright() as p:
     page.keyboard.press(' ');assert page.evaluate('deck.flipped')
     page.keyboard.press('2');assert page.evaluate('deck.index')==1 and page.evaluate('Object.values(state.cards)')==['known']
     page.reload();assert page.evaluate('Object.keys(validateState(JSON.parse(JSON.stringify(state))).cards).length')==1
-    page.click('[data-view="cards"]');page.click('[data-card-filter="unknown"]');assert page.evaluate('deck.ids.length')==99
+    page.click('[data-view="cards"]');page.click('#fc-deck');page.click('[data-card-filter="unknown"]');assert page.locator('#fc-pop').is_visible()
+    page.keyboard.press('Escape');assert not page.locator('#fc-pop').is_visible();assert page.evaluate('deck.ids.length')==99
     print('PASS question bank search/filters/flags, flashcard flip, marks, persistence')
     # Representative responsive states in both themes.
     output=ROOT/'design/screenshots';output.mkdir(parents=True,exist_ok=True)
