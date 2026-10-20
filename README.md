@@ -16,15 +16,17 @@ An offline adaptation of the neighboring `cis4100-practice` app, retaining its I
 
 All 100 multiple-choice stems and A–D options and all 10 written prompts come from the supplied review, saved in `Resources/midterm-review.txt`. Missing HTML tags in questions 21, 28, 33, and 39 were restored from context. IDs `Q001`–`Q100` follow the original order; `E01`–`E10` identify written prompts.
 
-The answers, explanations, and essay outlines are authored study aids. No instructor answer key or grading rubric was supplied. Source Notes explains qualifications to simplified wording and links to optional technical references. The original options are preserved, including the repeated A answer pattern in Domains 4 and 5.
+The answers, explanations, and essay outlines are authored study aids. No instructor answer key or grading rubric was supplied. Notes explains qualifications to simplified wording and links to optional technical references. The original options are preserved, including the repeated A answer pattern in Domains 4 and 5.
 
 ## Study workflow
 
 - **Practice:** mixed questions, one domain, one topic, or the complete bank. Choose an answer, then **Check** to reveal feedback.
 - **Test:** six repeatable mock tests or a new random test. Customize length, immediate/deferred feedback, and an optional timer. Saved mocks use up to 40 questions, limited to the selected pool. Each test has no repeated questions; different tests may overlap.
 - **Review:** missed questions or a cram session prioritized by weak topics.
+- **Flashcards:** flip through questions by domain, optionally shuffled. Mark each card **Got it** or **Still learning**; marks are saved so you can study only the cards you have not mastered. Keys: **Space** flip, **←/→** move, **1** still learning, **2** got it.
+- **Questions:** browse all 100 questions with search, domain and status filters (missed, flagged, not seen), per-question answer reveal, and flags. Turn any filtered set into a quiz or a flashcard deck.
 - **Written practice:** draft a response, reveal the study outline and example, then mark your confidence. Written responses are self-assessed and do not affect quiz scores.
-- **Progress & history:** first-attempt scores, retries, topic performance, flagged questions, session results, and JSON backup/import.
+- **Progress:** first-attempt scores, retries, topic performance, flagged questions, session results, and JSON backup/import.
 
 Question sessions support **A/B/C/D** to select, **Enter** to check or continue, **N/P** to navigate, **S** to skip, **R** to flag, **G** to open the navigator, and **Esc** to close it. Shortcuts do not intercept typing in form fields. Keyboard Tab navigation and mouse/touch controls also work.
 

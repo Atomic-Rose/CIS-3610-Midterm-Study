@@ -79,9 +79,9 @@ with sync_playwright() as p:
     assert page.evaluate('validateState(JSON.parse(JSON.stringify(state)))')==page.evaluate('JSON.parse(JSON.stringify(state))')
     page.on('dialog',lambda d:d.accept())
     page.set_input_files('#import',{'name':'progress.json','mimeType':'application/json','buffer':json.dumps(exported).encode()})
-    assert page.locator('#toast').inner_text().startswith('Progress imported')
+    page.wait_for_function("document.querySelector('#toast')?.textContent.startsWith('Progress imported')",timeout=5000)
     page.set_input_files('#import',{'name':'bad.json','mimeType':'application/json','buffer':b'{"version": 999}'})
-    assert page.locator('#toast').inner_text().startswith('Import rejected')
+    page.wait_for_function("document.querySelector('#toast')?.textContent.startsWith('Import rejected')",timeout=5000)
     assert page.evaluate('state.essays.E01.status')=='review'
     print('PASS written drafts, outlines, filters, confidence, reload, export/import, invalid import protection')
     # Reset then run a deferred test through UI.
@@ -105,13 +105,24 @@ with sync_playwright() as p:
     assert page.evaluate('state.active===null')
     assert page.locator('.results-score').count()==1
     print('PASS expired timer finalizes after reload')
+    # Question bank filters and flashcard marks.
+    page.evaluate("state=fresh();save();show('bank')");assert page.locator('.bank-item').count()==100
+    page.fill('#bank-search','DNS');n=page.locator('.bank-item').count();assert 0<n<100
+    page.click('[data-bank-status="missed"]');assert page.locator('.bank-item').count()==0
+    page.click('[data-bank-status="all"]');page.click('[data-bank-flag]');assert len(page.evaluate('state.flags'))==1
+    page.click('#bank-cards');assert page.evaluate('deck.ids.length')==n and page.locator('#fc').count()==1
+    page.keyboard.press(' ');assert page.evaluate('deck.flipped')
+    page.keyboard.press('2');assert page.evaluate('deck.index')==1 and page.evaluate('Object.values(state.cards)')==['known']
+    page.reload();assert page.evaluate('Object.keys(validateState(JSON.parse(JSON.stringify(state))).cards).length')==1
+    page.click('[data-view="cards"]');page.click('[data-card-filter="unknown"]');assert page.evaluate('deck.ids.length')==99
+    print('PASS question bank search/filters/flags, flashcard flip, marks, persistence')
     # Representative responsive states in both themes.
     output=ROOT/'design/screenshots';output.mkdir(parents=True,exist_ok=True)
     for width in [1360,390]:
       page.set_viewport_size({'width':width,'height':900})
       for theme in ['light','dark']:
         page.evaluate('(t)=>applyTheme(t,false)',theme)
-        for view in ['home','essays','history','notes']:
+        for view in ['home','cards','bank','essays','history','notes']:
           page.evaluate('(v)=>show(v)',view)
           assert page.evaluate('document.documentElement.scrollWidth<=innerWidth'),(width,theme,view)
           if view=='home':page.screenshot(path=str(output/f'{theme}-{width}-home.png'),full_page=True)

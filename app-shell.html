@@ -14,7 +14,7 @@
 </head>
 <body>
 <a class="skip-link" href="#main">Skip to content</a>
-<header class="site-header"><div class="topbar"><div class="brand"><div class="brandmark" aria-hidden="true">01</div><div>CIS 3610 <span> / Study Studio</span></div></div><button id="theme-cycle" class="icon-btn theme-cycle" data-theme-cycle type="button"></button><div class="topbar-end"><nav aria-label="Main navigation"><button data-view="home" class="active">Practice</button><button data-view="history">Progress &amp; history</button><button data-view="essays">Written practice</button><button data-view="notes">Source Notes</button></nav><div class="theme-toggle" role="group" aria-label="Color theme"><button type="button" data-theme-choice="system">System</button><button type="button" data-theme-choice="light">Light</button><button type="button" data-theme-choice="dark">Dark</button></div></div></div></header><div id="theme-status" class="sr-only" aria-live="polite"></div>
+<header class="site-header"><div class="topbar"><div class="brand"><div class="brandmark" aria-hidden="true">01</div><div>CIS 3610 <span> / Study Studio</span></div></div><button id="theme-cycle" class="icon-btn theme-cycle" data-theme-cycle type="button"></button><div class="topbar-end"><nav aria-label="Main navigation"><button data-view="home" class="active">Practice</button><button data-view="cards">Flashcards</button><button data-view="bank">Questions</button><button data-view="history">Progress</button><button data-view="essays">Written</button><button data-view="notes">Notes</button></nav><div class="theme-toggle" role="group" aria-label="Color theme"><button type="button" data-theme-choice="system">System</button><button type="button" data-theme-choice="light">Light</button><button type="button" data-theme-choice="dark">Dark</button></div></div></div></header><div id="theme-status" class="sr-only" aria-live="polite"></div>
 <main id="main" tabindex="-1"><div id="storage-warning" class="banner hidden" role="status"></div><div id="content"></div><footer>Works offline · Progress is saved in this browser.</footer></main>
 <div id="toast" role="status" class="hidden"></div>
 <dialog id="confirm-dialog" aria-labelledby="confirm-text"><p id="confirm-text"></p><div class="dialog-actions"><button id="confirm-cancel" type="button">Cancel</button><button id="confirm-ok" class="primary" type="button">Confirm</button></div></dialog>
@@ -29,7 +29,7 @@ const BY_ID=new Map(BANK.map(q=>[q.id,q]));
 const CHAPTERS=['','Web fundamentals','HTML & accessibility','JavaScript & debugging','Backend & security','Git & workflow'];
 const MODES=[['chapter','01','Domain Practice','Focus on one domain.'],['topic','02','Topic Practice','Choose a specific concept.'],['mixed','03','Mixed Practice','Balance your selected domains.'],['mock','04','Saved Mock Tests','Six repeatable tests, up to 40 questions.'],['random','05','New Random Test','A fresh, balanced practice test.'],['missed','06','Missed Questions','Revisit your latest errors.'],['cram','07','Cram Mode','Start with your weakest topics.'],['bank','08','Complete Bank','Work through your chosen material.']];
 const KEY='cis3610-study-v1';
-const fresh=()=>({version:1,essays:{},history:[],active:null,flags:[],settings:{chapters:[1,2,3,4,5],mode:'mixed',chapter:1,topic:'',length:'20',feedback:'immediate',timer:0,mock:0}});
+const fresh=()=>({version:1,essays:{},history:[],active:null,flags:[],cards:{},settings:{chapters:[1,2,3,4,5],mode:'mixed',chapter:1,topic:'',length:'20',feedback:'immediate',timer:0,mock:0}});
 let state=fresh(), view='home', selection=null, storageOK=true, toastTimer, timerHandle, expiryNotice=false;
 const $=s=>document.querySelector(s), esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const bool=v=>['A','B','C','D'].includes(v)?v:'Unanswered';
@@ -56,7 +56,8 @@ function validateState(raw){
  const history=raw.history.map(s=>sanitizeSession(s,false)), active=raw.active?sanitizeSession(raw.active,true):null;
  if(new Set([...history.map(s=>s.id),...(active?[active.id]:[])]).size!==history.length+(active?1:0))throw Error('Duplicate attempts.');
  const essays={};for(const q of ESSAYS){const d=raw.essays?.[q.id];if(d){if(typeof d.text!=='string'||d.text.length>20000||!['draft','review','confident'].includes(d.status))throw Error('Invalid written draft.');essays[q.id]={text:d.text,status:d.status}}}
- return {version:1,essays,history,active,flags:[...new Set(raw.flags.filter(id=>BY_ID.has(id)))],settings:{...fresh().settings,...settings}};
+ const cards={};if(raw.cards&&typeof raw.cards==='object')for(const [id,v] of Object.entries(raw.cards))if(BY_ID.has(id)&&(v==='known'||v==='learning'))cards[id]=v;
+ return {version:1,essays,history,active,cards,flags:[...new Set(raw.flags.filter(id=>BY_ID.has(id)))],settings:{...fresh().settings,...settings}};
 }
 try{const saved=localStorage.getItem(KEY);if(saved)state=validateState(JSON.parse(saved))}catch(e){storageWarning('Saved progress could not be loaded. Your original save is left untouched. Export any current work before resetting. '+e.message)}
 function save(){try{if(!storageOK)return;localStorage.setItem(KEY,JSON.stringify(state))}catch(e){storageWarning('Browser storage is unavailable or full. This session still works; use Export JSON to keep your progress.')}}
@@ -117,7 +118,7 @@ function tidy(text){return esc(text)
  .replace(/\b(C\d-\d{3})\b/g,'<span class="nw">$1</span>')}
 function ago(t){const m=Math.max(1,Math.round((Date.now()-t)/60000));return m<60?plural(m,'minute')+' ago':m<1440?plural(Math.round(m/60),'hour')+' ago':plural(Math.round(m/1440),'day')+' ago'}
 function scopeLabel(cs){const c=[...cs].sort((a,b)=>a-b);return c.length===1?`Domain ${c[0]}`:c.every((v,i)=>!i||v===c[i-1]+1)?`Domains ${c[0]}–${c.at(-1)}`:`Domains ${c.join(', ')}`}
-function show(v){view=v;clearInterval(timerHandle);drawerOpen=false;document.body.classList.toggle('focus-mode',v==='session');document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('active',b.dataset.view===v));if(v==='home')renderHome();else if(v==='session'&&state.active)renderSession();else if(v==='history')renderHistory();else if(v==='notes')renderNotes();else if(v==='essays')renderEssays();window.scrollTo({top:0,behavior:'instant'})}
+function show(v){view=v;clearInterval(timerHandle);drawerOpen=false;document.body.classList.toggle('focus-mode',v==='session');document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('active',b.dataset.view===v));if(v==='home')renderHome();else if(v==='session'&&state.active)renderSession();else if(v==='history')renderHistory();else if(v==='notes')renderNotes();else if(v==='essays')renderEssays();else if(v==='bank')renderBank();else if(v==='cards')renderCards();window.scrollTo({top:0,behavior:'instant'})}
 function overallStats(){const {first,latest,retry}=learning();let f=Object.values(first),correct=f.filter(e=>e.ok).length;return {f,latest,retry,correct,missed:Object.values(latest).filter(e=>!e.ok).length}}
 // A small modal confirmation with explicit labels. Resolves true only for the confirm button.
 function askConfirm(message,okLabel){const d=$('#confirm-dialog');$('#confirm-text').textContent=message;$('#confirm-ok').textContent=okLabel;return new Promise(resolve=>{const done=ok=>{d.onclose=null;if(d.open)d.close();resolve(ok)};$('#confirm-ok').onclick=()=>done(true);$('#confirm-cancel').onclick=()=>done(false);d.onclose=()=>done(false);d.showModal();$('#confirm-cancel').focus()})}
@@ -167,18 +168,19 @@ function renderHome(){
  const s=state.settings,st=overallStats();if(state.active)homeGroup=null;
  const hero=heroCard(st),weak=topicStats(Object.values(st.latest)).filter(t=>t.correct<t.total).slice(0,3),sessions=state.history.length;
  const icon=p=>`<svg class="choice-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="${p}"/></svg>`;
- const ICONS={practice:'M4 5h16M4 12h10M4 19h7m6-4 2 2 4-4',test:'M7 3h10l3 3v15H4V3h3m1 7h8m-8 4h8m-8 4h5',review:'M3 12a9 9 0 1 0 3-6.7L3 8m0-5v5h5m4-1v5l3 2'};
+ const ICONS={cards:'M8 3h11a2 2 0 0 1 2 2v11M5 7h10a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2',bank:'M11 18a7 7 0 1 1 0-14 7 7 0 0 1 0 14m10 3-5-5',written:'M4 20h4L19 9l-4-4L4 16v4m9-13 4 4',practice:'M4 5h16M4 12h10M4 19h7m6-4 2 2 4-4',test:'M7 3h10l3 3v15H4V3h3m1 7h8m-8 4h8m-8 4h5',review:'M3 12a9 9 0 1 0 3-6.7L3 8m0-5v5h5m4-1v5l3 2'};
+ const link=(id,ic,title,text)=>`<button class="choice" id="${id}">${icon(ICONS[ic])}<span class="choice-body"><strong>${title}</strong><span>${text}</span></span><span class="choice-go" aria-hidden="true">→</span></button>`;
  const stat=(v,l)=>`<div class="home-stat"><b>${v}</b><span>${l}</span></div>`;
  $('#content').innerHTML=`<div class="home">
  <p class="home-context"><span>CIS 3610 Midterm Review</span><span>${BANK.length} multiple-choice</span><span>${ESSAYS.length} written prompts</span></p>
  <section class="hero-card ${hero.kind==='resume'?'resume':''}" aria-labelledby="hero-title"><div class="eyebrow">${hero.eyebrow}</div><h1 id="hero-title">${esc(hero.title)}</h1>${hero.kind==='resume'?`<div class="hero-progress"><div class="hero-progress-label">Question <b>${hero.at}</b> of ${hero.total}</div><progress class="progress" max="${hero.total}" value="${hero.at-1}" aria-label="Session progress"></progress><p class="meta">${esc(hero.meta)}</p></div>`:`<p class="meta">${esc(hero.meta)}</p>`}<div class="hero-actions">${hero.kind==='resume'?'<button id="resume" class="primary btn-lg">Resume session</button><button id="discard" class="quiet">End &amp; save</button>':`<button id="hero-start" class="primary btn-lg">${hero.action}</button>`}</div></section>
  ${st.f.length?`<div class="home-stats">${stat(Math.round(st.correct/st.f.length*100)+'%','First-try accuracy')}${stat(st.f.length+'<small>/'+BANK.length+'</small>','Questions seen')}${stat(st.missed,'To revisit')}${stat(sessions,sessions===1?'Session':'Sessions')}</div>`:'<p class="home-empty">No sessions yet. Your accuracy and review list will appear here.</p>'}
  <h2 class="section-h">Start something else</h2>
- <div class="choices">${Object.keys(GROUPS).map(g=>`<button class="choice${homeGroup===g?' on':''}" data-group="${g}" aria-expanded="${homeGroup===g}" aria-controls="options">${icon(ICONS[g])}<span class="choice-body"><strong>${GROUP_INFO[g][0]}</strong><span>${g==='review'&&st.missed?`${plural(st.missed,'missed question')} or cram mode.`:GROUP_INFO[g][1]}</span></span></button>`).join('')}<button class="choice" id="open-essays">${icon('M4 20h4L19 9l-4-4L4 16v4m9-13 4 4')}<span class="choice-body"><strong>Written</strong><span>Draft answers to the ${ESSAYS.length} essay prompts.</span></span><span class="choice-go" aria-hidden="true">→</span></button></div>
+ <div class="choices">${Object.keys(GROUPS).map(g=>`<button class="choice${homeGroup===g?' on':''}" data-group="${g}" aria-expanded="${homeGroup===g}" aria-controls="options">${icon(ICONS[g])}<span class="choice-body"><strong>${GROUP_INFO[g][0]}</strong><span>${g==='review'&&st.missed?`${plural(st.missed,'missed question')} or cram mode.`:GROUP_INFO[g][1]}</span></span></button>`).join('')}${link('open-cards','cards','Flashcards','Flip through questions and mark what you know.')}${link('open-bank','bank','Question bank',`Browse and search all ${BANK.length} questions.`)}${link('open-essays','written','Written',`Draft answers to the ${ESSAYS.length} essay prompts.`)}</div>
  ${homeGroup?optionsPanel():''}
  ${weak.length?`<section class="focus" aria-labelledby="focus-title"><div class="section-row"><h2 class="section-h" id="focus-title">Your learning focus</h2><button id="practice-weak" class="link">Practice these →</button></div><div class="focus-rows">${weak.map(t=>`<div class="focus-row"><span class="focus-name"><span class="focus-domain">D${t.chapter}</span>${esc(t.topic)}</span><span class="focus-meter" aria-hidden="true"><span style="width:${Math.round((t.total-t.correct)/t.total*100)}%"></span></span><span class="muted">${t.total-t.correct} of ${t.total} to review</span></div>`).join('')}</div></section>`:''}
  </div>`;
- $('#open-essays').onclick=()=>show('essays');
+ $('#open-essays').onclick=()=>show('essays');$('#open-cards').onclick=()=>show('cards');$('#open-bank').onclick=()=>show('bank');
  let updating=false;
  const update=fn=>{if(updating)return;updating=true;try{fn();normalizeSettings();save();renderHome()}finally{updating=false}};
  if($('#resume'))$('#resume').onclick=()=>{if(checkExpiry())return;show('session')};
@@ -299,6 +301,77 @@ function renderEssays(){
  document.querySelectorAll('[data-essay]').forEach(el=>el.oninput=()=>{const id=el.dataset.essay;state.essays[id]={text:el.value,status:state.essays[id]?.status||'draft'};save();$('#save-'+id).textContent=storageOK?'Draft saved.':'Draft is in memory. Export progress to keep it.'});
  document.querySelectorAll('[data-confidence]').forEach(el=>el.onchange=()=>{const id=el.dataset.confidence;state.essays[id]={text:state.essays[id]?.text||'',status:el.value};save()});
 }
+// Question bank: every question with search, filters, and an optional answer key.
+let bankQuery='',bankDomain=0,bankStatus='all',bankAnswers=false;
+const BANK_STATUS=[['all','All'],['missed','Missed'],['flagged','Flagged'],['unseen','Not seen']],STATUS_LABEL={unseen:'Not seen',correct:'Correct',missed:'Missed'};
+const statusOf=(q,latest)=>!latest[q.id]?'unseen':latest[q.id].ok?'correct':'missed';
+const domainChips=(attr,cur,label)=>`<div class="chiprow" role="group" aria-label="${label}">${[0,1,2,3,4,5].map(d=>`<button class="pick" ${attr}="${d}" aria-pressed="${cur===d}">${d?d+' · '+CHAPTERS[d]:'All five'}</button>`).join('')}</div>`;
+const pressOnly=(attr,val)=>document.querySelectorAll(`[${attr}]`).forEach(b=>b.setAttribute('aria-pressed',String(b.getAttribute(attr)===String(val))));
+function bankFiltered(){const latest=overallStats().latest,words=bankQuery.toLowerCase().split(/\s+/).filter(Boolean);
+ return BANK.filter(q=>{if(bankDomain&&q.chapter!==bankDomain)return false;const st=statusOf(q,latest);
+  if(bankStatus==='missed'&&st!=='missed'||bankStatus==='unseen'&&st!=='unseen'||bankStatus==='flagged'&&!state.flags.includes(q.id))return false;
+  const hay=[q.id,q.topic,q.statement,...q.options].join(' ').toLowerCase();return words.every(w=>hay.includes(w))})}
+function renderBank(){
+ $('#content').innerHTML=`<div class="page-narrow"><div class="page-head"><div class="eyebrow">Browse everything</div><h1>Question bank</h1><p class="muted">All ${BANK.length} multiple-choice questions with the study key. Filter them, then quiz yourself or study the set as flashcards.</p></div>
+ <section class="panel bank-tools" aria-label="Filters"><div class="search-field"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="${'M11 18a7 7 0 1 1 0-14 7 7 0 0 1 0 14m10 3-5-5'}"/></svg><input id="bank-search" type="search" placeholder="Search questions, options, or topics" value="${esc(bankQuery)}" aria-label="Search questions" autocomplete="off"></div>
+ ${domainChips('data-bank-domain',bankDomain,'Domains')}
+ <div class="row"><div class="seg" role="group" aria-label="Status">${BANK_STATUS.map(([k,l])=>`<button data-bank-status="${k}" aria-pressed="${bankStatus===k}">${l}</button>`).join('')}</div><label class="check-label"><input type="checkbox" id="bank-answers" ${bankAnswers?'checked':''}> Show all answers</label></div></section>
+ <div class="bank-bar"><p id="bank-count" role="status"></p><div class="bank-actions"><button id="bank-cards">Study as flashcards</button><button id="bank-quiz" class="primary">Quiz these</button></div></div>
+ <div id="bank-list"></div></div>`;
+ $('#bank-search').oninput=e=>{bankQuery=e.target.value;renderBankList()};
+ document.querySelectorAll('[data-bank-domain]').forEach(b=>b.onclick=()=>{bankDomain=+b.dataset.bankDomain;pressOnly('data-bank-domain',bankDomain);renderBankList()});
+ document.querySelectorAll('[data-bank-status]').forEach(b=>b.onclick=()=>{bankStatus=b.dataset.bankStatus;pressOnly('data-bank-status',bankStatus);renderBankList()});
+ $('#bank-answers').onchange=e=>{bankAnswers=e.target.checked;renderBankList()};
+ $('#bank-quiz').onclick=()=>{const ids=bankFiltered().map(q=>q.id);endActiveThen(()=>startIds(shuffled(ids),`Question bank · ${plural(ids.length,'question')}`,'immediate'))};
+ $('#bank-cards').onclick=()=>{deck=newDeck(bankFiltered().map(q=>q.id),'From the question bank');show('cards')};
+ renderBankList();
+}
+function renderBankList(){
+ const list=bankFiltered(),latest=overallStats().latest;
+ $('#bank-count').innerHTML=`Showing <b>${list.length}</b> of ${BANK.length}`;$('#bank-quiz').disabled=$('#bank-cards').disabled=!list.length;
+ $('#bank-list').className='bank-list'+(bankAnswers?' show-answers':'');
+ $('#bank-list').innerHTML=list.length?list.map(q=>{const st=statusOf(q,latest),flag=state.flags.includes(q.id),expl=`<p class="bank-expl"><b>Answer ${q.answer}.</b> ${tidy(q.explanation)}</p>`;
+  return `<article class="bank-item"><div class="bank-meta"><span class="qid">${q.id}</span><span class="focus-domain">D${q.chapter}</span><span class="bank-topic">${esc(q.topic)}</span><span class="status s-${st}">${STATUS_LABEL[st]}</span><button class="icon-btn bank-flag" data-bank-flag="${q.id}" aria-pressed="${flag}" aria-label="${flag?'Remove flag from':'Flag'} ${q.id}" title="${flag?'Flagged':'Flag for later'}">⚑</button></div>
+  <p class="bank-stem">${tidy(q.statement)}</p><ol class="bank-options">${q.options.map((o,i)=>`<li${'ABCD'[i]===q.answer?' class="is-key"':''}><span class="option-letter">${'ABCD'[i]}</span><span>${tidy(o)}</span></li>`).join('')}</ol>
+  ${bankAnswers?expl:`<details class="bank-reveal"><summary>Show answer</summary>${expl}</details>`}</article>`}).join(''):'<p class="home-empty">No questions match these filters.</p>';
+ document.querySelectorAll('[data-bank-flag]').forEach(b=>b.onclick=()=>{const id=b.dataset.bankFlag;state.flags=state.flags.includes(id)?state.flags.filter(x=>x!==id):[...state.flags,id];save();renderBankList();$(`[data-bank-flag="${id}"]`)?.focus()});
+}
+// Flashcards: recall, flip, and self-mark. Marks persist in state.cards; the deck itself lives in memory.
+let cardDomain=0,cardFilter='all',cardShuffle=false,deck=null;
+const CARD_FILTERS=[['all','All cards'],['unknown','Not yet known'],['learning','Still learning']];
+const newDeck=(ids,source)=>({ids:cardShuffle?shuffled(ids):ids,index:0,flipped:false,marks:{},source});
+function buildDeck(){const pool=BANK.filter(q=>(!cardDomain||q.chapter===cardDomain)&&(cardFilter==='all'||cardFilter==='unknown'&&state.cards[q.id]!=='known'||cardFilter==='learning'&&state.cards[q.id]==='learning'));deck=newDeck(pool.map(q=>q.id),null)}
+function renderCards(){
+ if(!deck)buildDeck();
+ const d=deck,total=d.ids.length,marks=Object.values(d.marks),known=marks.filter(m=>m==='known').length,learningN=marks.length-known,q=BY_ID.get(d.ids[d.index]);
+ const allKnown=BANK.filter(x=>state.cards[x.id]==='known').length;
+ let body;
+ if(!total)body=`<p class="home-empty">${cardFilter==='learning'?'No cards marked “Still learning” here yet.':cardFilter==='unknown'?'You’ve marked every card here as known. Nice work.':'No cards match.'}</p>`;
+ else if(!q){const left=d.ids.filter(id=>d.marks[id]==='learning');body=`<section class="hero-card fc-done"><div class="eyebrow">Deck complete</div><h1>${plural(total,'card')} reviewed</h1><div class="fc-tally"><span><b>${known}</b> got it</span><span><b>${learningN}</b> still learning</span><span><b>${total-marks.length}</b> unmarked</span></div><div class="hero-actions">${left.length?`<button id="fc-again" class="primary btn-lg">Study the ${plural(left.length,'card')} you’re learning</button>`:''}<button id="fc-restart" class="${left.length?'':'primary btn-lg'}">Restart deck</button></div></section>`}
+ else body=`<div class="fc-progress"><span>Card <b>${d.index+1}</b> of ${total}</span><span>${known} got it · ${learningN} still learning</span></div><progress class="progress" max="${total}" value="${d.index}" aria-label="Deck progress"></progress>
+ <div class="fc-stage${d.flipped?' is-flipped':''}"><div class="fc" id="fc" tabindex="-1"><div class="fc-inner">
+  <div class="fc-face fc-front" aria-hidden="${d.flipped}"><div class="bank-meta"><span class="qid">${q.id}</span><span class="focus-domain">D${q.chapter}</span><span class="bank-topic">${esc(q.topic)}</span>${state.cards[q.id]?`<span class="status s-${state.cards[q.id]==='known'?'correct':'missed'}">${state.cards[q.id]==='known'?'Known':'Learning'}</span>`:''}</div><p class="fc-stem">${tidy(q.statement)}</p><ol class="bank-options">${q.options.map((o,i)=>`<li><span class="option-letter">${'ABCD'[i]}</span><span>${tidy(o)}</span></li>`).join('')}</ol><p class="fc-hint">Pick your answer, then flip.</p></div>
+  <div class="fc-face fc-back" aria-hidden="${!d.flipped}"><div class="eyebrow">Answer</div><p class="fc-answer"><span class="option-letter">${q.answer}</span><span>${tidy(q.options['ABCD'.indexOf(q.answer)])}</span></p><p class="fc-expl">${tidy(q.explanation)}</p></div>
+ </div></div>
+ <div class="fc-actions fc-actions-front"><button id="fc-prev" class="arrow" aria-label="Previous card" ${d.index?'':'disabled'}>←</button><button id="fc-flip" class="primary btn-lg">Show answer</button><button id="fc-next" class="arrow" aria-label="Skip to next card">→</button></div>
+ <div class="fc-actions fc-actions-back"><button id="fc-learning" class="btn-lg fc-learning">Still learning</button><button id="fc-known" class="primary btn-lg">Got it</button></div></div>
+ <p class="keyhelp fc-keys"><kbd>Space</kbd> flip · <kbd>←</kbd> <kbd>→</kbd> move · <kbd>1</kbd> still learning · <kbd>2</kbd> got it</p>`;
+ $('#content').innerHTML=`<div class="page-narrow fc-page"><div class="page-head"><div class="eyebrow">Recall, then reveal</div><h1>Flashcards</h1><p class="muted">Decide on your answer before you flip. Your marks are saved, so you can come back and study only what you’re still learning. ${allKnown} of ${BANK.length} marked known.</p></div>
+ <section class="panel bank-tools" aria-label="Deck options">${d.source?`<div class="row"><p class="fc-source">${esc(d.source)} · ${plural(total,'card')}</p><button id="fc-reset-source" class="link">Use all cards</button></div>`:`${domainChips('data-card-domain',cardDomain,'Domains')}<div class="row"><div class="seg" role="group" aria-label="Which cards">${CARD_FILTERS.map(([k,l])=>`<button data-card-filter="${k}" aria-pressed="${cardFilter===k}">${l}</button>`).join('')}</div><button id="fc-shuffle" class="pick" aria-pressed="${cardShuffle}">Shuffle</button></div>`}</section>
+ ${body}</div>`;
+ document.querySelectorAll('[data-card-domain]').forEach(b=>b.onclick=()=>{cardDomain=+b.dataset.cardDomain;buildDeck();renderCards()});
+ document.querySelectorAll('[data-card-filter]').forEach(b=>b.onclick=()=>{cardFilter=b.dataset.cardFilter;buildDeck();renderCards()});
+ if($('#fc-shuffle'))$('#fc-shuffle').onclick=()=>{cardShuffle=!cardShuffle;buildDeck();renderCards()};
+ if($('#fc-reset-source'))$('#fc-reset-source').onclick=()=>{buildDeck();renderCards()};
+ if($('#fc-again'))$('#fc-again').onclick=()=>{deck=newDeck(d.ids.filter(id=>d.marks[id]==='learning'),'Cards you’re still learning');renderCards()};
+ if($('#fc-restart'))$('#fc-restart').onclick=()=>{deck=newDeck(d.ids,d.source);renderCards()};
+ if(!q)return;
+ $('#fc').onclick=flipCard;$('#fc-flip').onclick=flipCard;$('#fc-prev').onclick=()=>moveCard(-1);$('#fc-next').onclick=()=>moveCard(1);
+ $('#fc-learning').onclick=()=>markCard('learning');$('#fc-known').onclick=()=>markCard('known');
+}
+function flipCard(){const d=deck,stage=$('.fc-stage');if(!stage)return;d.flipped=!d.flipped;stage.classList.toggle('is-flipped',d.flipped);$('.fc-front').setAttribute('aria-hidden',d.flipped);$('.fc-back').setAttribute('aria-hidden',!d.flipped);$('#fc').focus({preventScroll:true})}
+function moveCard(step){const d=deck,i=d.index+step;if(i<0)return;d.index=Math.min(i,d.ids.length);d.flipped=false;renderCards();($('#fc')||$('#fc-again')||$('#fc-restart'))?.focus({preventScroll:true})}
+function markCard(m){const id=deck.ids[deck.index];state.cards[id]=m;deck.marks[id]=m;save();moveCard(1)}
 // Theme: segmented control on wide screens, one cycling icon button on small screens and in the session drawer.
 function themeChoice(){return document.documentElement.dataset.theme||'system'}
 function syncThemeControls(){const c=themeChoice(),[,label,icon]=THEMES.find(t=>t[0]===c);document.querySelectorAll('[data-theme-choice]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.themeChoice===c)));document.querySelectorAll('[data-theme-cycle]').forEach(b=>{b.textContent=b.classList.contains('icon-btn')?icon:`${icon} Theme: ${label}`;b.setAttribute('aria-label',`Theme: ${label}. Change theme`);b.title=`Theme: ${label}`;b.onclick=cycleTheme})}
@@ -308,6 +381,10 @@ document.querySelectorAll('[data-view]').forEach(b=>b.onclick=()=>show(b.dataset
 document.querySelectorAll('[data-theme-choice]').forEach(b=>b.onclick=()=>applyTheme(b.dataset.themeChoice,true));
 applyTheme(themeChoice(),false);
 document.addEventListener('keydown',e=>{
+ if(view==='cards'&&deck&&deck.index<deck.ids.length&&$('.fc-stage')&&!e.ctrlKey&&!e.metaKey&&!e.altKey&&!e.repeat&&!$('#confirm-dialog').open&&!['INPUT','TEXTAREA','SELECT'].includes(e.target.tagName)){
+  const k=e.key,onButton=e.target.tagName==='BUTTON';
+  const act=k===' '&&!onButton?flipCard:k==='ArrowRight'?()=>moveCard(1):k==='ArrowLeft'?()=>moveCard(-1):deck.flipped&&k==='1'?()=>markCard('learning'):deck.flipped&&k==='2'?()=>markCard('known'):null;
+  if(act){e.preventDefault();act()}return}
  if(view!=='session'||!state.active||e.ctrlKey||e.metaKey||e.altKey||e.repeat||$('#confirm-dialog').open)return;
  if(drawerOpen){if(e.key==='Escape'){e.preventDefault();closeDrawer()}else if(e.key==='Tab')trapTab(e);return}
  if(['INPUT','TEXTAREA','SELECT','SUMMARY'].includes(e.target.tagName))return;
