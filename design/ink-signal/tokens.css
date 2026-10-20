@@ -1,0 +1,62 @@
+/* Ink & Signal design tokens — the single source of truth for color, type, spacing, shape, and motion.
+   Reusable in any app: include fonts.css, then this file, then components.css.
+   Theme: light by default; dark via prefers-color-scheme unless data-theme="light"; data-theme="dark" forces dark.
+   data-theme works on <html> or on any subtree. */
+:root,[data-theme="light"]{
+  --bg:#F6F7F9;--surface:#FFFFFF;--surface-2:#EEF0F4;--border:#E2E5EB;
+  --text:#0F172A;--text-muted:#5B6474;
+  --accent:#4F46E5;--accent-soft:#EEF0FF;
+  --flag:#D97706;
+  --correct:#0F9D6E;--correct-soft:#E7F7F0;
+  --incorrect:#DC2626;--incorrect-soft:#FDECEC;
+  /* Text on a solid accent fill: white passes AA in light (6.29:1). */
+  --on-accent:var(--surface);
+  --shadow:0 1px 2px rgb(15 23 42/.04),0 2px 8px rgb(15 23 42/.04);
+  --shadow-raised:0 2px 4px rgb(15 23 42/.05),0 8px 24px rgb(15 23 42/.07);
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#0B0F19;--surface:#121826;--surface-2:#1A2132;--border:#273042;
+    --text:#E6E9F0;--text-muted:#9AA3B5;
+    --accent:#818CF8;--accent-soft:#1E2240;
+    --flag:#F59E0B;
+    --correct:#34D399;--correct-soft:#0F2A22;
+    --incorrect:#F87171;--incorrect-soft:#2D1416;
+    /* White on #818CF8 is only 2.98:1, so dark mode uses the ink background (6.42:1). */
+    --on-accent:var(--bg);
+    --shadow:0 1px 2px rgb(0 0 0/.3);
+    --shadow-raised:0 4px 16px rgb(0 0 0/.35);
+    color-scheme:dark;
+  }
+}
+[data-theme="dark"]{
+  --bg:#0B0F19;--surface:#121826;--surface-2:#1A2132;--border:#273042;
+  --text:#E6E9F0;--text-muted:#9AA3B5;
+  --accent:#818CF8;--accent-soft:#1E2240;
+  --flag:#F59E0B;
+  --correct:#34D399;--correct-soft:#0F2A22;
+  --incorrect:#F87171;--incorrect-soft:#2D1416;
+  --on-accent:var(--bg);
+  --shadow:0 1px 2px rgb(0 0 0/.3);
+  --shadow-raised:0 4px 16px rgb(0 0 0/.35);
+  color-scheme:dark;
+}
+:root{
+  /* Type */
+  --font-sans:'Inter',ui-sans-serif,system-ui,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;
+  --font-mono:'JetBrains Mono',ui-monospace,SFMono-Regular,Consolas,'Liberation Mono',monospace;
+  --text-xs:12px;--text-sm:14px;--text-md:16px;--text-lg:18px;--text-xl:22px;--text-2xl:28px;--text-3xl:clamp(32px,4.2vw,44px);
+  --leading-tight:1.2;--leading-body:1.6;
+  --tracking-tight:-0.02em;--tracking-caps:0.08em;
+  --weight-regular:400;--weight-medium:500;--weight-semibold:600;--weight-bold:700;
+  /* 8px spacing scale */
+  --space-1:4px;--space-2:8px;--space-3:12px;--space-4:16px;--space-5:24px;--space-6:32px;--space-7:48px;--space-8:64px;
+  /* Shape */
+  --radius-sm:6px;--radius:8px;--radius-card:12px;--radius-pill:999px;
+  --focus-ring:0 0 0 2px var(--surface),0 0 0 4px var(--accent);
+  /* Motion: short and calm */
+  --duration:160ms;--ease:cubic-bezier(.2,0,0,1);
+  --content-width:1200px;
+}
+@media (prefers-reduced-motion:reduce){:root{--duration:0ms}}

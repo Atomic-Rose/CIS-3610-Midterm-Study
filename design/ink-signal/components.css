@@ -1,0 +1,123 @@
+/* Ink & Signal components. Uses only the variables in tokens.css. */
+*,*::before,*::after{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--text);font:var(--weight-regular) var(--text-md)/var(--leading-body) var(--font-sans);
+  font-feature-settings:'cv11','ss01';-webkit-font-smoothing:antialiased;transition:background-color var(--duration) var(--ease),color var(--duration) var(--ease)}
+h1,h2,h3{margin:0;font-weight:var(--weight-bold);line-height:var(--leading-tight);letter-spacing:var(--tracking-tight)}
+h1{font-size:var(--text-3xl)}
+h2{font-size:var(--text-xl);font-weight:var(--weight-semibold)}
+h3{font-size:var(--text-lg);font-weight:var(--weight-semibold);letter-spacing:-0.01em}
+p{margin:0 0 var(--space-4)}
+a{color:var(--accent);text-underline-offset:3px}
+.muted{color:var(--text-muted)}
+.mono,code,kbd,pre{font-family:var(--font-mono);font-feature-settings:normal}
+.num{font-variant-numeric:tabular-nums}
+.eyebrow{font:var(--weight-semibold) var(--text-xs)/1.4 var(--font-sans);letter-spacing:var(--tracking-caps);text-transform:uppercase;color:var(--text-muted)}
+:focus-visible{outline:none;box-shadow:var(--focus-ring);border-radius:var(--radius-sm)}
+::selection{background:var(--accent-soft);color:var(--text)}
+
+/* Buttons */
+.btn,button{font:var(--weight-semibold) var(--text-sm)/1.2 var(--font-sans);color:var(--text);background:var(--surface);
+  border:1px solid var(--border);border-radius:var(--radius);padding:10px var(--space-4);min-height:40px;cursor:pointer;white-space:nowrap;
+  transition:background-color var(--duration) var(--ease),border-color var(--duration) var(--ease),color var(--duration) var(--ease),box-shadow var(--duration) var(--ease)}
+.btn:hover:not(:disabled),button:hover:not(:disabled),.btn.is-hover{background:var(--surface-2)}
+.btn:focus-visible,button:focus-visible{box-shadow:var(--focus-ring);border-radius:var(--radius)}
+.btn:disabled,button:disabled{cursor:not-allowed;color:var(--text-muted);background:var(--surface-2);border-color:var(--border);opacity:.7}
+.btn-primary,button.primary{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+.btn-primary:hover:not(:disabled),button.primary:hover:not(:disabled),.btn-primary.is-hover{background:var(--accent);border-color:var(--accent);filter:brightness(1.08)}
+.btn-primary:disabled,button.primary:disabled{background:var(--surface-2);border-color:var(--border);color:var(--text-muted)}
+.btn-ghost{background:transparent;border-color:transparent}
+.btn-ghost:hover:not(:disabled),.btn-ghost.is-hover{background:var(--surface-2)}
+.btn[aria-pressed="true"],.btn.is-selected{background:var(--accent-soft);border-color:var(--accent);color:var(--text)}
+.btn-sm,button.small{min-height:32px;padding:6px var(--space-3);font-size:13px}
+
+/* Answer buttons: neutral until submitted; selection uses accent only. */
+.answer-buttons{display:grid;grid-template-columns:1fr 1fr;gap:var(--space-3);margin:var(--space-5) 0}
+.answer{display:flex;align-items:center;justify-content:center;gap:var(--space-3);min-height:64px;font-size:var(--text-lg);
+  background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-card)}
+.answer[aria-pressed="true"],.answer.is-selected{background:var(--accent-soft);border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent);color:var(--text)}
+.answer kbd{font-size:11px;font-weight:var(--weight-medium);color:var(--text-muted);background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:2px 6px}
+.answer[aria-pressed="true"] kbd{border-color:var(--accent)}
+/* After checking (feedback modes only): the right answer and a wrong pick. Text stays ink; color is the border, fill, and mark. */
+.answer.is-correct,.answer.is-correct:disabled{border-color:var(--correct);background:var(--correct-soft);box-shadow:inset 0 0 0 1px var(--correct);color:var(--text);opacity:1}
+.answer.is-incorrect,.answer.is-incorrect:disabled{border-color:var(--incorrect);background:var(--incorrect-soft);box-shadow:inset 0 0 0 1px var(--incorrect);color:var(--text);opacity:1}
+.answer .mark{font-weight:var(--weight-bold)}
+.answer.is-correct .mark{color:var(--correct)}
+.answer.is-incorrect .mark{color:var(--incorrect)}
+.nw{white-space:nowrap}
+
+/* Cards and chips */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-card);box-shadow:var(--shadow);padding:var(--space-5)}
+.chip{display:inline-flex;align-items:center;gap:6px;font:var(--weight-medium) var(--text-xs)/1 var(--font-sans);color:var(--text-muted);
+  background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius-pill);padding:5px 10px}
+.chip.accent{color:var(--accent);background:var(--accent-soft);border-color:transparent}
+.chip.flag::before{content:'';width:8px;height:8px;border-radius:2px;background:var(--flag)}
+.qid{font:var(--weight-regular) var(--text-xs)/1 var(--font-mono);color:var(--text-muted);letter-spacing:.02em}
+.statement{font-size:clamp(18px,2.1vw,21px);line-height:1.6;font-weight:var(--weight-medium);letter-spacing:-0.005em;margin:var(--space-4) 0 var(--space-2);overflow-wrap:anywhere}
+
+/* Progress */
+.progress{height:4px;background:var(--surface-2);border-radius:var(--radius-pill);overflow:hidden}
+.progress>span{display:block;height:100%;background:var(--accent);border-radius:inherit;transition:width 200ms var(--ease)}
+progress.progress{appearance:none;-webkit-appearance:none;width:100%;border:0;display:block;color:var(--accent);accent-color:var(--accent)}
+progress.progress::-webkit-progress-bar{background:var(--surface-2);border-radius:var(--radius-pill)}
+progress.progress::-webkit-progress-value{background:var(--accent);border-radius:var(--radius-pill);transition:width 200ms var(--ease)}
+progress.progress::-moz-progress-bar{background:var(--accent);border-radius:var(--radius-pill)}
+
+/* Feedback: color appears only here, as a bar and an icon; text stays ink for contrast. */
+.feedback{position:relative;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-card);padding:var(--space-5) var(--space-5) var(--space-5) calc(var(--space-5) + 4px);overflow:hidden}
+.feedback::before{content:'';position:absolute;inset:0 auto 0 0;width:4px;background:var(--correct)}
+.feedback.incorrect::before{background:var(--incorrect)}
+.feedback-head{display:flex;align-items:center;gap:var(--space-3);margin-bottom:var(--space-2)}
+.feedback-icon{display:grid;place-items:center;width:28px;height:28px;border-radius:var(--radius-pill);background:var(--correct-soft);color:var(--correct);font-weight:var(--weight-bold);flex:none}
+.feedback.incorrect .feedback-icon{background:var(--incorrect-soft);color:var(--incorrect)}
+.feedback-head h3{font-size:var(--text-lg)}
+.answerline{font-size:var(--text-sm);color:var(--text-muted);margin-bottom:var(--space-4)}
+.answerline strong{color:var(--text)}
+.feedback h4{margin:var(--space-4) 0 var(--space-1);font:var(--weight-semibold) 13px/1.4 var(--font-sans);color:var(--text-muted)}
+.feedback p{margin:0 0 var(--space-2)}
+.correction{background:var(--surface-2);border-radius:var(--radius);padding:var(--space-3) var(--space-4)}
+.steps,pre{font:var(--weight-regular) 13px/1.75 var(--font-mono);background:var(--surface-2);color:var(--text);border:1px solid var(--border);border-radius:var(--radius);
+  padding:var(--space-3) var(--space-4);margin:var(--space-2) 0 0;white-space:pre-wrap;overflow-wrap:anywhere;font-variant-numeric:tabular-nums}
+
+/* Stat cards */
+.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:var(--space-3)}
+.stat{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-card);box-shadow:var(--shadow);padding:var(--space-4) var(--space-5)}
+.stat b{display:block;font-size:var(--text-2xl);font-weight:var(--weight-bold);letter-spacing:var(--tracking-tight);font-variant-numeric:tabular-nums;line-height:1.15}
+.stat span{display:block;font-size:13px;color:var(--text-muted);margin-top:2px}
+.stat .progress{margin-top:var(--space-3)}
+
+/* Chapter cards: the whole card is the control. */
+.chapter{position:relative;display:block;cursor:pointer;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-card);padding:var(--space-4);
+  transition:border-color var(--duration) var(--ease),background-color var(--duration) var(--ease),box-shadow var(--duration) var(--ease)}
+.chapter:hover{border-color:var(--text-muted)}
+.chapter input{position:absolute;opacity:0;inset:0;width:100%;height:100%;margin:0;cursor:pointer}
+.chapter .check{position:absolute;top:var(--space-3);right:var(--space-3);display:grid;place-items:center;width:20px;height:20px;border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--surface);color:transparent;font-size:12px;font-weight:var(--weight-bold);transition:all var(--duration) var(--ease)}
+.chapter:has(input:checked),.chapter.is-selected{border-color:var(--accent);background:var(--accent-soft);box-shadow:inset 0 0 0 1px var(--accent)}
+.chapter:has(input:checked) .check,.chapter.is-selected .check{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+.chapter:has(input:focus-visible){box-shadow:var(--focus-ring)}
+.chapter .number{font:var(--weight-regular) var(--text-xs)/1 var(--font-mono);color:var(--text-muted)}
+.chapter strong{display:block;font-size:var(--text-sm);line-height:1.35;margin:var(--space-2) 0 var(--space-1);padding-right:var(--space-5)}
+.chapter small{font-size:var(--text-xs);color:var(--text-muted)}
+
+/* Hero: binary as a faint background texture; the label sits on its own solid plate so nothing overlaps. */
+.hero-art{position:relative;isolation:isolate;display:grid;place-items:center;gap:var(--space-3);min-height:200px;padding:var(--space-6);
+  background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-card);overflow:hidden}
+.hero-art .binary{position:absolute;inset:0;z-index:-1;padding:var(--space-3);font:12px/22px var(--font-mono);letter-spacing:.35em;color:var(--text);opacity:.09;overflow:hidden;overflow-wrap:anywhere;user-select:none;
+  -webkit-mask-image:radial-gradient(ellipse at center,transparent 0 30%,#000 75%);mask-image:radial-gradient(ellipse at center,transparent 0 30%,#000 75%)}
+.hero-art .orbit{font:var(--weight-semibold) var(--text-lg)/1 var(--font-mono);letter-spacing:.2em;color:var(--text);background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:var(--space-4) var(--space-5);box-shadow:var(--shadow)}
+.hero-art .legend{font:var(--weight-semibold) var(--text-xs)/1 var(--font-sans);letter-spacing:var(--tracking-caps);text-transform:uppercase;color:var(--text-muted);background:var(--surface);border-radius:var(--radius-pill);padding:6px 10px}
+
+/* Theme toggle */
+.theme-toggle{display:inline-flex;gap:2px;padding:2px;background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius)}
+.theme-toggle button{min-height:28px;padding:4px 10px;border:0;background:transparent;font-size:12px;color:var(--text-muted)}
+.theme-toggle button[aria-pressed="true"]{background:var(--surface);color:var(--text);box-shadow:var(--shadow)}
+
+/* Sticky action bar for small screens */
+.action-bar{display:flex;align-items:center;justify-content:space-between;gap:var(--space-3)}
+@media (max-width:620px){
+  .stats{grid-template-columns:1fr 1fr}
+  .action-bar{position:sticky;bottom:0;z-index:5;margin:var(--space-4) calc(-1 * var(--space-4)) 0;padding:var(--space-3) var(--space-4) calc(var(--space-3) + env(safe-area-inset-bottom));
+    background:var(--surface);border-top:1px solid var(--border);box-shadow:0 -4px 16px rgb(15 23 42/.06)}
+  .answer{min-height:56px}
+}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{transition-duration:0ms!important;animation-duration:0ms!important;scroll-behavior:auto!important}}
