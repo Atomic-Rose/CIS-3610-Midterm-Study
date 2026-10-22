@@ -2,7 +2,9 @@
 
 An offline adaptation of the neighboring `cis4100-practice` app, retaining its Ink & Signal theme and study workflow.
 
-**Open [index.html](index.html) in your browser.** No installation, server, account, or internet connection is needed. The HTML file contains the fonts, styles, code, and question data, so you can copy it alone to another computer.
+**Use the shared app: https://atomic-rose.github.io/CIS-3610-Midterm-Study/**
+
+Or open [index.html](index.html) in your browser. No installation, server, account, or internet connection is needed. The HTML file contains the fonts, styles, code, and question data, so you can copy it alone to another computer.
 
 ## Included material
 
@@ -34,9 +36,15 @@ Choose System, Light, or Dark in the header. On mobile, the theme icon cycles th
 
 ## Progress and privacy
 
-Progress and written drafts save to local browser storage. **Save & exit** preserves an unfinished quiz; **Resume** returns to it. The CIS 3610 storage key is separate from CIS 4100 progress. Theme preference is shared with the original app.
+Progress, flashcard marks, and written drafts save only to each visitor’s local browser storage. Visitors do not share progress, and no answers or drafts are uploaded to GitHub. People using the same browser profile on the same device share that profile’s saved progress. **Save & exit** preserves an unfinished quiz; **Resume** returns to it. The CIS 3610 storage key is separate from CIS 4100 progress. Theme preference is shared with the original app.
 
 Storage can depend on the browser and file location. Export progress before moving files, switching browsers/devices, or clearing browser data. Imports validate the data and ask before replacing progress. Reset requires confirmation. The timer continues while away and finalizes expired work when the app next runs. Skipped and unanswered questions count as incorrect when a session is finalized.
+
+## GitHub Pages deployment
+
+`.github/workflows/pages.yml` rebuilds and publishes the standalone app whenever changes are pushed to `main`. Only the generated `index.html` is included in the Pages deployment. GitHub Pages must be set to use **GitHub Actions** as its publishing source.
+
+Progress from a local HTML file does not automatically transfer to the hosted site. Export your progress from the local app, then import it on the shared site. Clearing browser storage removes that browser’s saved progress; use JSON exports for backups or moving devices.
 
 ## Development
 
